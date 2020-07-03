@@ -1,0 +1,23 @@
+{
+  "name": "elevationprofile",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsc -w",
+    "lint": "tslint './app/*.ts'"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/arcgis-js-api": "^4.15.0",
+    "chart.js": "^2.9.3",
+    "highcharts": "^8.1.2",
+    "plotly.js-dist": "^1.54.5"
+  },
+  "devDependencies": {
+    "@types/plotly.js": "^1.50.13",
+    "tslint": "^6.1.2",
+    "typescript": "^3.9.6"
+  }
+}

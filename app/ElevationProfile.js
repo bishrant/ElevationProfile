@@ -26,7 +26,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
-define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/core/watchUtils", "esri/widgets/support/widget", "esri/widgets/Sketch/SketchViewModel", "esri/layers/GraphicsLayer"], function (require, exports, __extends, __decorate, decorators_1, Widget, watchUtils, widget_1, SketchViewModel, GraphicsLayer) {
+define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/core/watchUtils", "esri/widgets/support/widget", "esri/widgets/Sketch/SketchViewModel", "esri/layers/GraphicsLayer", "esri/Graphic", "esri/geometry/Polyline", "esri/geometry/geometryEngine"], function (require, exports, __extends, __decorate, decorators_1, Widget, watchUtils, widget_1, SketchViewModel, GraphicsLayer, Graphic, Polyline, geometryEngine_1) {
     "use strict";
     watchUtils = __importStar(watchUtils);
     var ElevationProfile = /** @class */ (function (_super) {
@@ -43,12 +43,8 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             this.initSketchVM();
         };
         ElevationProfile.prototype.render = function () {
-            var _a = this.state, x = _a.x, y = _a.y, scale = _a.scale;
             return (widget_1.tsx("div", null,
-                x,
-                " ",
-                y,
-                widget_1.tsx("button", { bind: this, onclick: this._startDrawing }, "Activate Lasers"),
+                widget_1.tsx("button", { bind: this, onclick: this._startDrawing }, "Draw"),
                 widget_1.tsx("div", { id: "myDiv", style: "height: 300px; width: 600px" })));
         };
         ElevationProfile.prototype.initSketchVM = function () {
@@ -59,7 +55,6 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                 view: this.mapView
             });
             this._DrawingComplete();
-            // this.send();
         };
         ElevationProfile.prototype._startDrawing = function () {
             this.sketchVM.create('polyline');
@@ -113,18 +108,83 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             })
                 .catch(function (error) { return console.log('error', error); });
         };
+        ElevationProfile.prototype.distance = function (a, b) {
+            return Math.sqrt((a[0] - b[0]) * (a[0] - b[0]) + (a[0] - b[0]) * (a[0] - b[0]));
+        };
         ElevationProfile.prototype.createChart = function (r) {
+            var that = this;
             new Promise(function (resolve_1, reject_1) { require(['https://cdn.plot.ly/plotly-latest.min.js'], resolve_1, reject_1); }).then(__importStar).then(function (Plotly) {
                 var result = JSON.parse(r);
                 var ptArray = result.results[0].value.features[0].geometry.paths[0];
+                for (var i in ptArray) {
+                    if (parseInt(i) === 0) {
+                        console.log(" 0 length");
+                        ptArray[i].push(0);
+                    }
+                    else {
+                        var myArray = ptArray.slice().splice(0, parseInt(i) + 1);
+                        var line = new Polyline({
+                            hasZ: true,
+                            // hasM: true,
+                            paths: [myArray],
+                            spatialReference: { wkid: 102100 }
+                        });
+                        var l = geometryEngine_1.planarLength(line, "miles");
+                        ptArray[i].push(l);
+                        console.log(l, myArray.length, i);
+                    }
+                }
+                var l1 = new Polyline({
+                    hasZ: true,
+                    // hasM: true,
+                    paths: [ptArray],
+                    spatialReference: { wkid: 102100 }
+                });
+                var le = geometryEngine_1.planarLength(l1, "miles");
+                console.log("TOTAL ", le);
                 var trace1 = {
-                    x: ptArray.map(function (p, i) { return i + 1; }),
+                    x: ptArray.map(function (p, i) { return p[3]; }),
                     y: ptArray.map(function (p) { return p[2]; }),
+                    fill: 'tonexty',
                     type: 'scatter'
                 };
                 var data = [trace1];
                 console.log(ptArray);
-                Plotly.newPlot('myDiv', data);
+                var options = {
+                    hoverMode: 'closest',
+                    hoverDistance: -1,
+                    hoveron: "points"
+                };
+                Plotly.newPlot('myDiv', data, options);
+                var myPlot = document.getElementById('myDiv');
+                myPlot.on('plotly_hover', function (data) {
+                    console.log(data.points[0]);
+                    var pId = data.points[0].pointIndex;
+                    var pt = ptArray[pId];
+                    var point = {
+                        type: "point",
+                        x: pt[0],
+                        y: pt[1],
+                        spatialReference: { wkid: 102100 }
+                    };
+                    // Create a symbol for drawing the point
+                    var markerSymbol = {
+                        type: "simple-marker",
+                        style: "cross",
+                        color: "cyan"
+                    };
+                    // Create a graphic and add the geometry and symbol to it
+                    var pointGraphic = new Graphic({
+                        geometry: point,
+                        symbol: markerSymbol
+                    });
+                    console.log(pt);
+                    that.mapView.graphics.removeAll();
+                    that.mapView.graphics.add(pointGraphic);
+                })
+                    .on('plotly_unhover', function (data) {
+                    that.mapView.graphics.removeAll();
+                });
             });
         };
         ElevationProfile.prototype.displayLineChart = function (graphic) {

@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@types/plotly.js": "^1.50.13",
+    "@types/source-map": "^0.5.7",
     "tslint": "^6.1.2",
     "typescript": "^3.9.6"
   }

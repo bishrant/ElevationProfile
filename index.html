@@ -10,7 +10,7 @@
     #viewDiv {
       padding: 0;
       margin: 0;
-      height: 100%;
+      height: 600px;
       width: 100%;
     }
   </style>
@@ -47,7 +47,8 @@
       view.when(function () {
         var widget = new ElevationProfile({
           mapView: view,
-          map: map
+          map: map,
+          slopeThreshold: 4
         });
         view.ui.add(widget, 'bottom-right');
       })

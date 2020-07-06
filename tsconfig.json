@@ -10,12 +10,14 @@
       "experimentalDecorators": true,
       "preserveConstEnums": true,
       "suppressImplicitAnyIndexErrors": true,
-      "moduleResolution": "node"
+      "moduleResolution": "node",
+      "lib": [ "DOM", "ES5"]
     },
     "include": [
       "./app/*","./app/decs.d.ts"
     ],
     "exclude": [
       "node_modules"
-    ]
+    ],
+    
   }

@@ -26,15 +26,27 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
-define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/core/watchUtils", "esri/widgets/support/widget", "esri/widgets/Sketch/SketchViewModel", "esri/layers/GraphicsLayer", "esri/Graphic", "esri/geometry/Polyline", "esri/geometry/geometryEngine"], function (require, exports, __extends, __decorate, decorators_1, Widget, watchUtils, widget_1, SketchViewModel, GraphicsLayer, Graphic, Polyline, geometryEngine_1) {
+define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/core/watchUtils", "esri/widgets/support/widget", "esri/widgets/Sketch/SketchViewModel", "esri/layers/GraphicsLayer", "esri/Graphic", "https://cdn.plot.ly/plotly-latest.min.js", "./Uitls", "./GraphStyles"], function (require, exports, __extends, __decorate, decorators_1, Widget, watchUtils, widget_1, SketchViewModel, GraphicsLayer, Graphic, Plotly, Uitls_1, GraphStyles_1) {
     "use strict";
     watchUtils = __importStar(watchUtils);
+    Plotly = __importStar(Plotly);
     var ElevationProfile = /** @class */ (function (_super) {
         __extends(ElevationProfile, _super);
-        function ElevationProfile(params) {
-            return _super.call(this) || this;
-            // this._onViewChange = this._onViewChange.bind(this);
+        function ElevationProfile(params, slopeThreshold) {
+            if (slopeThreshold === void 0) { slopeThreshold = 8; }
+            var _this = _super.call(this) || this;
+            _this.slopeThreshold = slopeThreshold;
+            return _this;
         }
+        ElevationProfile.prototype.render = function () {
+            return (widget_1.tsx("div", null,
+                "Steep slope >",
+                this.slopeThreshold,
+                "%",
+                widget_1.tsx("button", { bind: this, onclick: this._startDrawing }, "Draw"),
+                widget_1.tsx("div", { id: "myDiv", style: "height: 300px; width: 600px" }),
+                widget_1.tsx("button", { onclick: this.exportImage }, "Create Report")));
+        };
         ElevationProfile.prototype.postInitialize = function () {
             var _this = this;
             this.mapView.watch("center", function () { return _this._onViewChange(); });
@@ -42,10 +54,12 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             watchUtils.init(this, "view.center, view.interacting, view.scale", function () { return _this._onViewChange(); });
             this.initSketchVM();
         };
-        ElevationProfile.prototype.render = function () {
-            return (widget_1.tsx("div", null,
-                widget_1.tsx("button", { bind: this, onclick: this._startDrawing }, "Draw"),
-                widget_1.tsx("div", { id: "myDiv", style: "height: 300px; width: 600px" })));
+        ElevationProfile.prototype.exportImage = function () {
+            var myPlot = document.getElementById('myDiv');
+            Plotly.toImage(myPlot, { height: 300, width: 300 })
+                .then(function (url) {
+                console.log(url);
+            });
         };
         ElevationProfile.prototype.initSketchVM = function () {
             var graphicsLayer = new GraphicsLayer();
@@ -55,6 +69,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                 view: this.mapView
             });
             this._DrawingComplete();
+            this.createChart(Uitls_1.dt);
         };
         ElevationProfile.prototype._startDrawing = function () {
             this.sketchVM.create('polyline');
@@ -80,9 +95,6 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
         ElevationProfile.prototype.send = function (feat) {
             var myHeaders = new Headers();
             myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
-            // myHeaders.append("Access-Control-Allow-Credentials", "true");
-            // myHeaders.append("Access-Control-Allow-Origin", "http://localhost:4501");
-            // myHeaders.append("Cookie", "AGS_ROLES=\"419jqfa+uOZgYod4xPOQ8Q==\"; AWSELB=2D7D79D118CF06FE55F3FE32B215F683FD69AAD5B71D10B50FF8BC5EED565120D0BDD53770A2473F86F08B1123AB8951C1F07DFAF2C75669499EF31ED6E1F9477C89C85FA3; AWSELBCORS=2D7D79D118CF06FE55F3FE32B215F683FD69AAD5B71D10B50FF8BC5EED565120D0BDD53770A2473F86F08B1123AB8951C1F07DFAF2C75669499EF31ED6E1F9477C89C85FA3");
             var urlencoded = new URLSearchParams();
             urlencoded.append("f", "json");
             urlencoded.append("returnZ", "true");
@@ -104,88 +116,52 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             fetch("https://elevation.arcgis.com/arcgis/rest/services/Tools/ElevationSync/GPServer/Profile/execute", requestOptions)
                 .then(function (response) { return response.text(); })
                 .then(function (result) {
-                that.createChart(result);
+                // that.createChart(result);
             })
                 .catch(function (error) { return console.log('error', error); });
         };
-        ElevationProfile.prototype.distance = function (a, b) {
-            return Math.sqrt((a[0] - b[0]) * (a[0] - b[0]) + (a[0] - b[0]) * (a[0] - b[0]));
-        };
         ElevationProfile.prototype.createChart = function (r) {
             var that = this;
-            new Promise(function (resolve_1, reject_1) { require(['https://cdn.plot.ly/plotly-latest.min.js'], resolve_1, reject_1); }).then(__importStar).then(function (Plotly) {
-                var result = JSON.parse(r);
-                var ptArray = result.results[0].value.features[0].geometry.paths[0];
-                for (var i in ptArray) {
-                    if (parseInt(i) === 0) {
-                        console.log(" 0 length");
-                        ptArray[i].push(0);
-                    }
-                    else {
-                        var myArray = ptArray.slice().splice(0, parseInt(i) + 1);
-                        var line = new Polyline({
-                            hasZ: true,
-                            // hasM: true,
-                            paths: [myArray],
-                            spatialReference: { wkid: 102100 }
-                        });
-                        var l = geometryEngine_1.planarLength(line, "miles");
-                        ptArray[i].push(l);
-                        console.log(l, myArray.length, i);
-                    }
-                }
-                var l1 = new Polyline({
-                    hasZ: true,
-                    // hasM: true,
-                    paths: [ptArray],
-                    spatialReference: { wkid: 102100 }
-                });
-                var le = geometryEngine_1.planarLength(l1, "miles");
-                console.log("TOTAL ", le);
-                var trace1 = {
-                    x: ptArray.map(function (p, i) { return p[3]; }),
-                    y: ptArray.map(function (p) { return p[2]; }),
-                    fill: 'tonexty',
-                    type: 'scatter'
-                };
-                var data = [trace1];
-                console.log(ptArray);
-                var options = {
-                    hoverMode: 'closest',
-                    hoverDistance: -1,
-                    hoveron: "points"
-                };
-                Plotly.newPlot('myDiv', data, options);
-                var myPlot = document.getElementById('myDiv');
-                myPlot.on('plotly_hover', function (data) {
-                    console.log(data.points[0]);
-                    var pId = data.points[0].pointIndex;
-                    var pt = ptArray[pId];
-                    var point = {
-                        type: "point",
-                        x: pt[0],
-                        y: pt[1],
-                        spatialReference: { wkid: 102100 }
-                    };
-                    // Create a symbol for drawing the point
-                    var markerSymbol = {
-                        type: "simple-marker",
-                        style: "cross",
-                        color: "cyan"
-                    };
-                    // Create a graphic and add the geometry and symbol to it
-                    var pointGraphic = new Graphic({
-                        geometry: point,
-                        symbol: markerSymbol
-                    });
-                    console.log(pt);
-                    that.mapView.graphics.removeAll();
-                    that.mapView.graphics.add(pointGraphic);
-                })
-                    .on('plotly_unhover', function (data) {
-                    that.mapView.graphics.removeAll();
-                });
+            // const result = JSON.parse(r);
+            var ptArray = JSON.parse(r); //result.results[0].value.features[0].geometry.paths[0];
+            ptArray = Uitls_1.CalculateLength(ptArray);
+            var normalLine = GraphStyles_1.CreateNormalElevationLine(ptArray);
+            ptArray = Uitls_1.CalculateSlope(ptArray);
+            var higherSlope = Uitls_1.GetSegmentsWithHigherSlope(ptArray, this.slopeThreshold);
+            var higherSlopeLine = GraphStyles_1.CreateHigherSlopeLine(higherSlope);
+            var data = [normalLine, higherSlopeLine];
+            var options = GraphStyles_1.GetGraphOptions(ptArray);
+            Plotly.newPlot('test', data, options).then(function (plot) {
+                that.plot = plot;
             });
+            var myPlot = document.getElementById('test');
+            myPlot.on('plotly_hover', function (data) {
+                var pId = data.points[0].pointIndex;
+                var pt = ptArray[pId];
+                var point = {
+                    type: "point",
+                    x: pt[0],
+                    y: pt[1],
+                    spatialReference: { wkid: 102100 }
+                };
+                // Create a symbol for drawing the point
+                var markerSymbol = {
+                    type: "simple-marker",
+                    style: "cross",
+                    color: "cyan"
+                };
+                // Create a graphic and add the geometry and symbol to it
+                var pointGraphic = new Graphic({
+                    geometry: point,
+                    symbol: markerSymbol
+                });
+                that.mapView.graphics.removeAll();
+                that.mapView.graphics.add(pointGraphic);
+            })
+                .on('plotly_unhover', function (data) {
+                that.mapView.graphics.removeAll();
+            });
+            // })
         };
         ElevationProfile.prototype.displayLineChart = function (graphic) {
             console.log(graphic.toJSON());
@@ -204,6 +180,13 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
         __decorate([
             decorators_1.property()
         ], ElevationProfile.prototype, "sketchVM", void 0);
+        __decorate([
+            decorators_1.property()
+        ], ElevationProfile.prototype, "plot", void 0);
+        __decorate([
+            widget_1.renderable(),
+            decorators_1.property()
+        ], ElevationProfile.prototype, "slopeThreshold", void 0);
         __decorate([
             decorators_1.property()
         ], ElevationProfile.prototype, "map", void 0);

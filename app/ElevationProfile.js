@@ -164,7 +164,6 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             // })
         };
         ElevationProfile.prototype.displayLineChart = function (graphic) {
-            console.log(graphic.toJSON());
             var g = graphic.toJSON();
             g.atttributes = { 'OID': 1 };
             this.send(g);

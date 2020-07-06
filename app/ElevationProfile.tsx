@@ -190,7 +190,6 @@ class ElevationProfile extends declared(Widget) {
     // })
   }
   private displayLineChart(graphic: Graphic) {
-    console.log(graphic.toJSON());
     let g = graphic.toJSON();
     g.atttributes = { 'OID': 1 };
     this.send(g);

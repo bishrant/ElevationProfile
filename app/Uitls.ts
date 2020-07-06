@@ -33,7 +33,7 @@ const CalculateLength = (ptArray: any) => {
                 paths: [myArray],
                 spatialReference: { wkid: 102100 }
             });
-            var l = planarLength(line, "miles");
+            var l = planarLength(line, "feet");
             ptArray[i].push(l.toPrecision(2));
         }
     }

@@ -27,7 +27,7 @@ define(["require", "exports", "./Uitls"], function (require, exports, Uitls_1) {
             marker: {
                 color: 'transparent'
             },
-            fillcolor: 'lightblue',
+            // fillcolor: 'lightblue',
             line: {
                 color: 'rgb(0,0,0)',
                 width: 2
@@ -41,7 +41,35 @@ define(["require", "exports", "./Uitls"], function (require, exports, Uitls_1) {
             hoverMode: 'closest',
             hoverDistance: -1,
             hoveron: "points",
-            yaxis: { range: [Uitls_1.min(elev) * 0.9, Uitls_1.max(elev) * 1.1] }
+            showlegend: false,
+            title: {
+                text: 'Plot Title',
+                font: {
+                    family: 'Courier New, monospace',
+                    size: 24
+                },
+                xref: 'paper',
+                x: 0.05,
+            },
+            xaxis: {
+                title: {
+                    text: 'Distance along profile (feet)',
+                    font: {
+                        size: 18,
+                        color: '#7f7f7f'
+                    }
+                },
+            },
+            yaxis: {
+                range: [Uitls_1.min(elev) * 0.9, Uitls_1.max(elev) * 1.1],
+                title: {
+                    text: 'Elevation (feet)',
+                    font: {
+                        size: 18,
+                        color: '#7f7f7f'
+                    }
+                }
+            }
         };
         return options;
     };

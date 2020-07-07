@@ -119,14 +119,14 @@ class ElevationProfile extends declared(Widget) {
     this.sketchVM.on('create', function (evt: any) {
       if (evt.state === 'complete') {
         console.log(evt.graphic);
-        that.viewModel.state = "loading";
+        this.viewModel.userGraphic = evt.graphic;
         that.displayLineChart(evt.graphic);
-
       }
     })
   }
 
   private async displayLineChart(graphic: Graphic) {
+    this.viewModel.state = "loading";
     try {
       let elevationData = await this.viewModel.GetElevationData(graphic);
       this.viewModel.state = 'ready';

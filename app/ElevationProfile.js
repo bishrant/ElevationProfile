@@ -123,7 +123,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             this.sketchVM.on('create', function (evt) {
                 if (evt.state === 'complete') {
                     console.log(evt.graphic);
-                    that.viewModel.state = "loading";
+                    this.viewModel.userGraphic = evt.graphic;
                     that.displayLineChart(evt.graphic);
                 }
             });
@@ -134,22 +134,25 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            _a.trys.push([0, 3, , 4]);
-                            return [4 /*yield*/, this.viewModel.GetElevationData(graphic)];
+                            this.viewModel.state = "loading";
+                            _a.label = 1;
                         case 1:
+                            _a.trys.push([1, 4, , 5]);
+                            return [4 /*yield*/, this.viewModel.GetElevationData(graphic)];
+                        case 2:
                             elevationData = _a.sent();
                             this.viewModel.state = 'ready';
                             return [4 /*yield*/, elevationData.text()];
-                        case 2:
+                        case 3:
                             result = _a.sent();
                             this.createChart(result);
-                            return [3 /*break*/, 4];
-                        case 3:
+                            return [3 /*break*/, 5];
+                        case 4:
                             error_1 = _a.sent();
                             this.viewModel.state = "Error";
                             console.error(error_1);
-                            return [3 /*break*/, 4];
-                        case 4: return [2 /*return*/];
+                            return [3 /*break*/, 5];
+                        case 5: return [2 /*return*/];
                     }
                 });
             });

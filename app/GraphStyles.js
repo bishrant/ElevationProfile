@@ -19,20 +19,29 @@ define(["require", "exports", "./Uitls"], function (require, exports, Uitls_1) {
         };
     };
     exports.CreateHigherSlopeLine = CreateHigherSlopeLine;
-    var CreateNormalElevationLine = function (ptArray) {
+    var CreateNormalElevationLine = function (ptArray0) {
+        var ptArray = ptArray0.slice();
         return {
             x: ptArray.map(function (p) { return p[3]; }),
             y: ptArray.map(function (p) { return p[2]; }),
-            fill: 'tozeroy',
-            type: 'scatter',
+            customdata: ptArray.map(function (p) { return [p[2] - ptArray[0][2], p[4]]; }),
+            fill: "tozeroy",
+            type: "scatter",
+            m: ptArray.map(function (p) { return p[2]; })[0],
             marker: {
-                color: 'transparent'
+                color: "transparent",
             },
-            fillcolor: 'lightblue',
+            name: "",
+            text: "new line",
+            fillcolor: "rgba(173,216,230,0.5)",
             line: {
-                color: 'rgb(0,0,0)',
-                width: 3
+                color: "rgb(0,0,0)",
+                width: 2,
             },
+            hovertemplate: "%{y:.2f} ft altitude<br>" +
+                "%{x:.2f} mi from start<br>" +
+                "%{customdata[0]:.2f} ft elevation change<br>" +
+                "%{customdata[1]:.2f}% forward slope",
         };
     };
     exports.CreateNormalElevationLine = CreateNormalElevationLine;
@@ -46,6 +55,7 @@ define(["require", "exports", "./Uitls"], function (require, exports, Uitls_1) {
             staticPlot: true,
             displayModeBar: false,
             xaxis: {
+                showgrid: false,
                 title: {
                     text: "Distance along profile (feet)",
                     font: {
@@ -54,8 +64,8 @@ define(["require", "exports", "./Uitls"], function (require, exports, Uitls_1) {
                     },
                 },
                 showspikes: true,
-                spikedash: 'solid',
-                spikethickness: 1
+                spikedash: "solid",
+                spikethickness: 1,
             },
             yaxis: {
                 range: [Uitls_1.min(elev) * 0.9, Uitls_1.max(elev) * 1.1],

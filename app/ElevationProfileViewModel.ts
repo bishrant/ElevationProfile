@@ -33,6 +33,9 @@ class ElevationProfileViewModel extends declared(Accessor) {
 
   @property()
   plot: any;
+    
+  @property()
+  userGraphic: Graphic;
 
   @property()
   private ptArray: any = [];
@@ -67,15 +70,37 @@ class ElevationProfileViewModel extends declared(Accessor) {
     return fetch(
       "https://elevation.arcgis.com/arcgis/rest/services/Tools/ElevationSync/GPServer/Profile/execute",
       requestOptions
-    )
-      
+    );
+  }
+  getHoverInfo = (x: any, y: any, ptArray: any, n: any = 0) => {
+    const xArray = ptArray[0][2];
+    //   if (typeof n !== 'number') {
+    //     return 'test'
+    //   }
+    console.log(xArray, n);
+    //   const slope = ptArray[n][2];
+    return y + " feet altitude <br>" + x + " miles from start<br>"; // + this.getS(n)
+    //   slope + "% slope";
+    //   "n + '' + x + "stest" + xArray;
+  };
+
+  getS(s: any) {
+    return s;
   }
 
   getChartData(r: any) {
     // const result = JSON.parse(r);
-    let ptArray = JSON.parse(r) //result.results[0].value.features[0].geometry.paths[0];
+    let ptArray = JSON.parse(r); //result.results[0].value.features[0].geometry.paths[0];
     ptArray = CalculateLength(ptArray);
-    const normalLine = CreateNormalElevationLine(ptArray);
+    let normalLine: any = CreateNormalElevationLine(ptArray);
+    console.log(ptArray);
+
+    // normalLine.hoveinfo = this.getHoverInfo(
+    //   "%{x}",
+    //   "%{y}",
+    //   ptArray,
+    //   "%{data}"
+    // );
 
     ptArray = CalculateSlope(ptArray);
     const higherSlope = GetSegmentsWithHigherSlope(
@@ -84,8 +109,7 @@ class ElevationProfileViewModel extends declared(Accessor) {
     );
     var higherSlopeLine = CreateHigherSlopeLine(higherSlope);
 
-      var data = [normalLine, higherSlopeLine] as any;
-      console.log(data);
+    var data = [normalLine, higherSlopeLine] as any;
     const options = GetGraphOptions(ptArray);
     this.ptArray = ptArray;
     return [data, options];

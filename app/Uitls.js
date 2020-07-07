@@ -39,7 +39,6 @@ define(["require", "exports", "esri/geometry/Polyline", "esri/geometry/geometryE
                 });
                 var l = geometryEngine_1.planarLength(line, "miles");
                 ptArray[i].push(parseFloat(l.toPrecision(2)));
-                console.log(l, l.toPrecision(2));
             }
         }
         return ptArray;

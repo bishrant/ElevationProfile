@@ -35,7 +35,6 @@ const CalculateLength = (ptArray: any) => {
             });
             var l = planarLength(line, "miles");
           ptArray[i].push(parseFloat(l.toPrecision(2)));
-          console.log(l, l.toPrecision(2));
         }
     }
     return ptArray;
@@ -53,6 +52,7 @@ const CalculateSlope = (ptArray: any) => {
 
     return ptArray;
 }
+
 
 const GetSegmentsWithHigherSlope = (ptArray: any, threshold: number) => {
     let pts = [];

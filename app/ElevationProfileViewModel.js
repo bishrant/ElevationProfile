@@ -28,6 +28,18 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             var _this = _super.call(this) || this;
             _this.ptArray = [];
             _this.state = "idle";
+            _this.getHoverInfo = function (x, y, ptArray, n) {
+                if (n === void 0) { n = 0; }
+                var xArray = ptArray[0][2];
+                //   if (typeof n !== 'number') {
+                //     return 'test'
+                //   }
+                console.log(xArray, n);
+                //   const slope = ptArray[n][2];
+                return y + " feet altitude <br>" + x + " miles from start<br>"; // + this.getS(n)
+                //   slope + "% slope";
+                //   "n + '' + x + "stest" + xArray;
+            };
             return _this;
         }
         ElevationProfileViewModel.prototype.GetElevationData = function (graphic) {
@@ -56,16 +68,25 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             };
             return fetch("https://elevation.arcgis.com/arcgis/rest/services/Tools/ElevationSync/GPServer/Profile/execute", requestOptions);
         };
+        ElevationProfileViewModel.prototype.getS = function (s) {
+            return s;
+        };
         ElevationProfileViewModel.prototype.getChartData = function (r) {
             // const result = JSON.parse(r);
             var ptArray = JSON.parse(r); //result.results[0].value.features[0].geometry.paths[0];
             ptArray = Uitls_1.CalculateLength(ptArray);
             var normalLine = GraphStyles_1.CreateNormalElevationLine(ptArray);
+            console.log(ptArray);
+            // normalLine.hoveinfo = this.getHoverInfo(
+            //   "%{x}",
+            //   "%{y}",
+            //   ptArray,
+            //   "%{data}"
+            // );
             ptArray = Uitls_1.CalculateSlope(ptArray);
             var higherSlope = Uitls_1.GetSegmentsWithHigherSlope(ptArray, this.slopeThreshold);
             var higherSlopeLine = GraphStyles_1.CreateHigherSlopeLine(higherSlope);
             var data = [normalLine, higherSlopeLine];
-            console.log(data);
             var options = GraphStyles_1.GetGraphOptions(ptArray);
             this.ptArray = ptArray;
             return [data, options];
@@ -106,6 +127,9 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
         __decorate([
             decorators_1.property()
         ], ElevationProfileViewModel.prototype, "plot", void 0);
+        __decorate([
+            decorators_1.property()
+        ], ElevationProfileViewModel.prototype, "userGraphic", void 0);
         __decorate([
             decorators_1.property()
         ], ElevationProfileViewModel.prototype, "ptArray", void 0);

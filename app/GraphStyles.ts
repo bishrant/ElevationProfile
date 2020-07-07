@@ -38,9 +38,9 @@ const CreateNormalElevationLine = (ptArray0: any) => {
         width: 2,
       },
       hovertemplate:
-        "%{y:.2f} ft altitude<br>" +
+        "%{y:.2f} ft elevation<br>" +
         "%{x:.2f} mi from start<br>" +
-        "%{customdata[0]:.2f} ft elevation change<br>" +
+        "%{customdata[0]:.2f} ft net elevation change<br>" +
         "%{customdata[1]:.2f}% forward slope",
     };
 }
@@ -61,7 +61,8 @@ const GetGraphOptions = (ptArray: any) => {
           text: "Distance along profile (feet)",
           font: {
             size: 18,
-            color: "#7f7f7f",
+            color: "black",
+            family: '"Open Sans", verdana, arial, sans-serif;',
           },
         },
         showspikes: true,
@@ -75,7 +76,8 @@ const GetGraphOptions = (ptArray: any) => {
           text: "Elevation (feet)",
           font: {
             size: 18,
-            color: "#7f7f7f",
+            color: "black",
+            family: '"Open Sans", verdana, arial, sans-serif;',
           },
         },
       },

@@ -33,7 +33,7 @@ class ElevationProfileViewModel extends declared(Accessor) {
 
   @property()
   plot: any;
-    
+
   @property()
   userGraphic: Graphic;
 
@@ -93,23 +93,20 @@ class ElevationProfileViewModel extends declared(Accessor) {
     let ptArray = JSON.parse(r); //result.results[0].value.features[0].geometry.paths[0];
     ptArray = CalculateLength(ptArray);
     let normalLine: any = CreateNormalElevationLine(ptArray);
-    console.log(ptArray);
+    var data: any;
+    if (this.slopeThreshold > 0) {
+      ptArray = CalculateSlope(ptArray);
+      const higherSlope = GetSegmentsWithHigherSlope(
+        ptArray,
+        this.slopeThreshold
+      );
+      var higherSlopeLine = CreateHigherSlopeLine(higherSlope);
 
-    // normalLine.hoveinfo = this.getHoverInfo(
-    //   "%{x}",
-    //   "%{y}",
-    //   ptArray,
-    //   "%{data}"
-    // );
+      data = [normalLine, higherSlopeLine] as any;
+    } else {
+      data = [normalLine] as any;
+    }
 
-    ptArray = CalculateSlope(ptArray);
-    const higherSlope = GetSegmentsWithHigherSlope(
-      ptArray,
-      this.slopeThreshold
-    );
-    var higherSlopeLine = CreateHigherSlopeLine(higherSlope);
-
-    var data = [normalLine, higherSlopeLine] as any;
     const options = GetGraphOptions(ptArray);
     this.ptArray = ptArray;
     return [data, options];

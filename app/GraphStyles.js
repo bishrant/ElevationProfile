@@ -38,9 +38,9 @@ define(["require", "exports", "./Uitls"], function (require, exports, Uitls_1) {
                 color: "rgb(0,0,0)",
                 width: 2,
             },
-            hovertemplate: "%{y:.2f} ft altitude<br>" +
+            hovertemplate: "%{y:.2f} ft elevation<br>" +
                 "%{x:.2f} mi from start<br>" +
-                "%{customdata[0]:.2f} ft elevation change<br>" +
+                "%{customdata[0]:.2f} ft net elevation change<br>" +
                 "%{customdata[1]:.2f}% forward slope",
         };
     };
@@ -60,7 +60,8 @@ define(["require", "exports", "./Uitls"], function (require, exports, Uitls_1) {
                     text: "Distance along profile (feet)",
                     font: {
                         size: 18,
-                        color: "#7f7f7f",
+                        color: "black",
+                        family: '"Open Sans", verdana, arial, sans-serif;',
                     },
                 },
                 showspikes: true,
@@ -73,7 +74,8 @@ define(["require", "exports", "./Uitls"], function (require, exports, Uitls_1) {
                     text: "Elevation (feet)",
                     font: {
                         size: 18,
-                        color: "#7f7f7f",
+                        color: "black",
+                        family: '"Open Sans", verdana, arial, sans-serif;',
                     },
                 },
             },

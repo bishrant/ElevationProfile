@@ -76,17 +76,16 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             var ptArray = JSON.parse(r); //result.results[0].value.features[0].geometry.paths[0];
             ptArray = Uitls_1.CalculateLength(ptArray);
             var normalLine = GraphStyles_1.CreateNormalElevationLine(ptArray);
-            console.log(ptArray);
-            // normalLine.hoveinfo = this.getHoverInfo(
-            //   "%{x}",
-            //   "%{y}",
-            //   ptArray,
-            //   "%{data}"
-            // );
-            ptArray = Uitls_1.CalculateSlope(ptArray);
-            var higherSlope = Uitls_1.GetSegmentsWithHigherSlope(ptArray, this.slopeThreshold);
-            var higherSlopeLine = GraphStyles_1.CreateHigherSlopeLine(higherSlope);
-            var data = [normalLine, higherSlopeLine];
+            var data;
+            if (this.slopeThreshold > 0) {
+                ptArray = Uitls_1.CalculateSlope(ptArray);
+                var higherSlope = Uitls_1.GetSegmentsWithHigherSlope(ptArray, this.slopeThreshold);
+                var higherSlopeLine = GraphStyles_1.CreateHigherSlopeLine(higherSlope);
+                data = [normalLine, higherSlopeLine];
+            }
+            else {
+                data = [normalLine];
+            }
             var options = GraphStyles_1.GetGraphOptions(ptArray);
             this.ptArray = ptArray;
             return [data, options];

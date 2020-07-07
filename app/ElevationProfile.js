@@ -96,10 +96,13 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                 "Steep slope > ",
                 slopeThreshold,
                 "%",
-                widget_1.tsx("button", { onclick: this.exportImage }, "Create Report")));
+                widget_1.tsx("button", { onclick: this.exportImage }, "Create Report"),
+                widget_1.tsx("button", { onclick: this.reverseProfile }, "Reverse Profile direction")));
         };
         ElevationProfile.prototype.start = function () {
             this.sketchVM.create('polyline');
+        };
+        ElevationProfile.prototype.reverseProfile = function () {
         };
         ElevationProfile.prototype.exportImage = function () {
             var myPlot = document.getElementById('myDiv');

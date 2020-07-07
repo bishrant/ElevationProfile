@@ -85,11 +85,16 @@ class ElevationProfile extends declared(Widget) {
         Steep slope &gt; { slopeThreshold}%
        
         <button onclick={this.exportImage}>Create Report</button>
+        <button onclick={this.reverseProfile}>Reverse Profile direction</button>
       </div>
     );
   }
   start() {
     this.sketchVM.create('polyline');
+  }
+
+  reverseProfile() {
+    
   }
 
   exportImage() {

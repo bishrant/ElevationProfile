@@ -1,7 +1,7 @@
 /// <amd-dependency path="esri/core/tsSupport/declareExtendsHelper" name="__extends" />
 /// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
 
-import { subclass, declared, property } from "esri/core/accessorSupport/decorators";
+import { subclass, declared, property, aliasOf } from "esri/core/accessorSupport/decorators";
 
 import Widget = require("esri/widgets/Widget");
 import MapView = require("esri/views/MapView");
@@ -16,23 +16,25 @@ import { planarLength } from "esri/geometry/geometryEngine";
 import * as Plotly from 'https://cdn.plot.ly/plotly-latest.min.js';
 import { max, min, dt, CalculateLength, CalculateSlope, GetSegmentsWithHigherSlope } from "./Uitls";
 import { CreateHigherSlopeLine, CreateNormalElevationLine, GetGraphOptions } from "./GraphStyles";
+import ElevationProfileViewModel = require("./ElevationProfileViewModel");
+import { ElevationProfileProperties } from "./interfaces";
 
 @subclass("esri.widgets.ElevationProfile")
 class ElevationProfile extends declared(Widget) {
 
-  constructor(params?: any, slopeThreshold: number = 8) {
+  constructor(props: ElevationProfileProperties) {
     super();
-    this.slopeThreshold = slopeThreshold;
   }
+
+  @property()
+  map: Map;
 
   @property()
   @renderable()
   state: any;
 
   @property()
-  @renderable()
   mapView: MapView;
-
 
   @property()
   sketchVM: SketchViewModel;
@@ -40,17 +42,21 @@ class ElevationProfile extends declared(Widget) {
   @property()
   plot: any;
 
-  @renderable()
   @property()
-  slopeThreshold: number;
+  @renderable([
+    "viewModel.slopeThreshold"
+  ])
+  viewModel: ElevationProfileViewModel = new ElevationProfileViewModel();
 
-  @property()
-  map: Map;
+  @aliasOf("viewModel.slopeThreshold")
+  slopeThreshold: ElevationProfileViewModel["slopeThreshold"];
+
 
   render() {
+    const { slopeThreshold } = this.viewModel;
     return (
       <div>
-        Steep slope &gt;{this.slopeThreshold}%
+        Steep slope &gt;{slopeThreshold}%
         <button bind={this} onclick={this._startDrawing}>
           Draw
         </button>
@@ -140,54 +146,20 @@ class ElevationProfile extends declared(Widget) {
       )
       .catch((error: any) => console.log('error', error));
   }
+  protected _renderChart(data: any[], options: any): any {
+    let that = this;
+    Plotly.newPlot('test', data, options, { displayModeBar: false }).then(function (plot: any) {
+      that.viewModel.plot = plot;
+    })
+    return null;
+  }
 
   private createChart(r: any) {
-
-    const that = this;
     // const result = JSON.parse(r);
     let ptArray = JSON.parse(r); //result.results[0].value.features[0].geometry.paths[0];
-    ptArray = CalculateLength(ptArray);
-    const normalLine = CreateNormalElevationLine(ptArray);
-
-    ptArray = CalculateSlope(ptArray);
-    const higherSlope = GetSegmentsWithHigherSlope(ptArray, this.slopeThreshold);
-    var higherSlopeLine = CreateHigherSlopeLine(higherSlope);
-
-    var data = [normalLine, higherSlopeLine] as any;
-    const options = GetGraphOptions(ptArray);
-    Plotly.newPlot('test', data, options).then(function (plot: any) {
-      that.plot = plot;
-    })
-    var myPlot: any = document.getElementById('test');
-    myPlot.on('plotly_hover', function (data: any) {
-      const pId = data.points[0].pointIndex;
-      const pt = ptArray[pId];
-      var point: any = {
-        type: "point",  // autocasts as new Point()
-        x: pt[0],
-        y: pt[1],
-        spatialReference: { wkid: 102100 }
-      };
-
-      // Create a symbol for drawing the point
-      var markerSymbol: any = {
-        type: "simple-marker",
-        style: "cross",
-        color: "cyan"
-      };
-
-      // Create a graphic and add the geometry and symbol to it
-      var pointGraphic = new Graphic({
-        geometry: point,
-        symbol: markerSymbol
-      });
-      that.mapView.graphics.removeAll();
-      that.mapView.graphics.add(pointGraphic);
-    })
-      .on('plotly_unhover', function (data: any) {
-        that.mapView.graphics.removeAll();
-      });
-    // })
+    const [data, options] = this.viewModel.getChartData(r);
+    this._renderChart(data, options);
+    this.viewModel.initializeHover(ptArray, this.mapView);
   }
   private displayLineChart(graphic: Graphic) {
     let g = graphic.toJSON();

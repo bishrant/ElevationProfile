@@ -26,22 +26,22 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
-define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/core/watchUtils", "esri/widgets/support/widget", "esri/widgets/Sketch/SketchViewModel", "esri/layers/GraphicsLayer", "esri/Graphic", "https://cdn.plot.ly/plotly-latest.min.js", "./Uitls", "./GraphStyles"], function (require, exports, __extends, __decorate, decorators_1, Widget, watchUtils, widget_1, SketchViewModel, GraphicsLayer, Graphic, Plotly, Uitls_1, GraphStyles_1) {
+define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/core/watchUtils", "esri/widgets/support/widget", "esri/widgets/Sketch/SketchViewModel", "esri/layers/GraphicsLayer", "https://cdn.plot.ly/plotly-latest.min.js", "./Uitls", "./ElevationProfileViewModel"], function (require, exports, __extends, __decorate, decorators_1, Widget, watchUtils, widget_1, SketchViewModel, GraphicsLayer, Plotly, Uitls_1, ElevationProfileViewModel) {
     "use strict";
     watchUtils = __importStar(watchUtils);
     Plotly = __importStar(Plotly);
     var ElevationProfile = /** @class */ (function (_super) {
         __extends(ElevationProfile, _super);
-        function ElevationProfile(params, slopeThreshold) {
-            if (slopeThreshold === void 0) { slopeThreshold = 8; }
+        function ElevationProfile(props) {
             var _this = _super.call(this) || this;
-            _this.slopeThreshold = slopeThreshold;
+            _this.viewModel = new ElevationProfileViewModel();
             return _this;
         }
         ElevationProfile.prototype.render = function () {
+            var slopeThreshold = this.viewModel.slopeThreshold;
             return (widget_1.tsx("div", null,
                 "Steep slope >",
-                this.slopeThreshold,
+                slopeThreshold,
                 "%",
                 widget_1.tsx("button", { bind: this, onclick: this._startDrawing }, "Draw"),
                 widget_1.tsx("div", { id: "myDiv", style: "height: 300px; width: 600px" }),
@@ -120,48 +120,19 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             })
                 .catch(function (error) { return console.log('error', error); });
         };
-        ElevationProfile.prototype.createChart = function (r) {
+        ElevationProfile.prototype._renderChart = function (data, options) {
             var that = this;
+            Plotly.newPlot('test', data, options, { displayModeBar: false }).then(function (plot) {
+                that.viewModel.plot = plot;
+            });
+            return null;
+        };
+        ElevationProfile.prototype.createChart = function (r) {
             // const result = JSON.parse(r);
             var ptArray = JSON.parse(r); //result.results[0].value.features[0].geometry.paths[0];
-            ptArray = Uitls_1.CalculateLength(ptArray);
-            var normalLine = GraphStyles_1.CreateNormalElevationLine(ptArray);
-            ptArray = Uitls_1.CalculateSlope(ptArray);
-            var higherSlope = Uitls_1.GetSegmentsWithHigherSlope(ptArray, this.slopeThreshold);
-            var higherSlopeLine = GraphStyles_1.CreateHigherSlopeLine(higherSlope);
-            var data = [normalLine, higherSlopeLine];
-            var options = GraphStyles_1.GetGraphOptions(ptArray);
-            Plotly.newPlot('test', data, options).then(function (plot) {
-                that.plot = plot;
-            });
-            var myPlot = document.getElementById('test');
-            myPlot.on('plotly_hover', function (data) {
-                var pId = data.points[0].pointIndex;
-                var pt = ptArray[pId];
-                var point = {
-                    type: "point",
-                    x: pt[0],
-                    y: pt[1],
-                    spatialReference: { wkid: 102100 }
-                };
-                // Create a symbol for drawing the point
-                var markerSymbol = {
-                    type: "simple-marker",
-                    style: "cross",
-                    color: "cyan"
-                };
-                // Create a graphic and add the geometry and symbol to it
-                var pointGraphic = new Graphic({
-                    geometry: point,
-                    symbol: markerSymbol
-                });
-                that.mapView.graphics.removeAll();
-                that.mapView.graphics.add(pointGraphic);
-            })
-                .on('plotly_unhover', function (data) {
-                that.mapView.graphics.removeAll();
-            });
-            // })
+            var _a = this.viewModel.getChartData(r), data = _a[0], options = _a[1];
+            this._renderChart(data, options);
+            this.viewModel.initializeHover(ptArray, this.mapView);
         };
         ElevationProfile.prototype.displayLineChart = function (graphic) {
             var g = graphic.toJSON();
@@ -169,12 +140,14 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             this.send(g);
         };
         __decorate([
+            decorators_1.property()
+        ], ElevationProfile.prototype, "map", void 0);
+        __decorate([
             decorators_1.property(),
             widget_1.renderable()
         ], ElevationProfile.prototype, "state", void 0);
         __decorate([
-            decorators_1.property(),
-            widget_1.renderable()
+            decorators_1.property()
         ], ElevationProfile.prototype, "mapView", void 0);
         __decorate([
             decorators_1.property()
@@ -183,12 +156,14 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             decorators_1.property()
         ], ElevationProfile.prototype, "plot", void 0);
         __decorate([
-            widget_1.renderable(),
-            decorators_1.property()
-        ], ElevationProfile.prototype, "slopeThreshold", void 0);
+            decorators_1.property(),
+            widget_1.renderable([
+                "viewModel.slopeThreshold"
+            ])
+        ], ElevationProfile.prototype, "viewModel", void 0);
         __decorate([
-            decorators_1.property()
-        ], ElevationProfile.prototype, "map", void 0);
+            decorators_1.aliasOf("viewModel.slopeThreshold")
+        ], ElevationProfile.prototype, "slopeThreshold", void 0);
         ElevationProfile = __decorate([
             decorators_1.subclass("esri.widgets.ElevationProfile")
         ], ElevationProfile);

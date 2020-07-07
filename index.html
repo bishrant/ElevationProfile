@@ -4,20 +4,8 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no" />
   <title>ArcGIS JSAPI 4.15 TypeScript Demo</title>
-  <style>
-    html,
-    body,
-    #viewDiv {
-      padding: 0;
-      margin: 0;
-      height: 600px;
-      width: 100%;
-    }
-    .js-fill {
-      background: rgb(2,0,255) !important;
-    }
-  </style>
   <link rel="stylesheet" href="https://js.arcgis.com/4.15/esri/themes/light/main.css">
+    <link rel="stylesheet" href="./app/css/main.css">
   <script>
     var locationPath = location.pathname.replace(/\/[^\/]+$/, "");
     window.dojoConfig = {
@@ -26,42 +14,48 @@
           name: "app",
           location: "/app"
         },
-        
+
       ]
     };
   </script>
   <script src="https://js.arcgis.com/4.15/"></script>
-  
+
   <script>
     var widget;
 
-    require(["esri/Map", "esri/views/MapView", "app/ElevationProfile",], 
-    function (Map, MapView,  ElevationProfile) {
-      map = new Map({
-        basemap: 'streets'
-      });
+    require(["esri/Map", "esri/views/MapView", "app/ElevationProfile",],
+      function (Map, MapView, ElevationProfile) {
+        map = new Map({
+          basemap: 'streets'
+        });
 
-      view = new MapView({
-        container: "viewDiv",
-        map: map,
-        center: [-100.33, 43.69],
-        zoom: 16
-      });
-      view.when(function () {
+        view = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [-100.33, 43.69],
+          zoom: 16
+        });
         var widget = new ElevationProfile({
           mapView: view,
-          map: map,
           slopeThreshold: 4
         });
-        view.ui.add(widget, 'bottom-right');
-      })
-    });
+        view.when(function () {
+          document.getElementById('createGraph').addEventListener("click", (function(e) {
+            console.log('clicked');
+            widget.start();
+          }));
+          view.ui.add(widget, 'bottom-right');
+
+
+        })
+      });
   </script>
 </head>
 
 <body>
   <div id="viewDiv" class="esri-widget"></div>
   <div id="test"></div>
+  <button id='createGraph' style="position: absolute;top:10px; right: 20px;">Elevation profile</button>
 </body>
 
 </html>

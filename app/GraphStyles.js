@@ -31,7 +31,7 @@ define(["require", "exports", "./Uitls"], function (require, exports, Uitls_1) {
             fillcolor: 'lightblue',
             line: {
                 color: 'rgb(0,0,0)',
-                width: 2
+                width: 3
             },
         };
     };

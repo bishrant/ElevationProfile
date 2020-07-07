@@ -1,0 +1,24 @@
+.elevation-profile {
+    display: flex;
+    flex-direction: column;
+}
+
+.elevation-profile__chart {
+    /* height: 300px;  */
+    /* width: 600px; */
+}
+
+.elevation-profile__infobar {
+    display: flex;
+    align-items: center;
+}
+.elevation-profile__hidden {
+    display: none;
+}
+.elevation-profile__loading{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+}

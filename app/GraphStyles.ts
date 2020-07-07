@@ -30,7 +30,7 @@ const CreateNormalElevationLine = (ptArray: any) => {
         fillcolor: 'lightblue',
         line: {
             color: 'rgb(0,0,0)',
-            width: 2
+            width: 3
       },
         
     };

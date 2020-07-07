@@ -37,8 +37,9 @@ define(["require", "exports", "esri/geometry/Polyline", "esri/geometry/geometryE
                     paths: [myArray],
                     spatialReference: { wkid: 102100 }
                 });
-                var l = geometryEngine_1.planarLength(line, "feet");
-                ptArray[i].push(l.toPrecision(2));
+                var l = geometryEngine_1.planarLength(line, "miles");
+                ptArray[i].push(parseFloat(l.toPrecision(2)));
+                console.log(l, l.toPrecision(2));
             }
         }
         return ptArray;

@@ -25,8 +25,37 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
     var ElevationProfileViewModel = /** @class */ (function (_super) {
         __extends(ElevationProfileViewModel, _super);
         function ElevationProfileViewModel(props) {
-            return _super.call(this) || this;
+            var _this = _super.call(this) || this;
+            _this.ptArray = [];
+            _this.state = "idle";
+            return _this;
         }
+        ElevationProfileViewModel.prototype.GetElevationData = function (graphic) {
+            var feat = graphic.toJSON();
+            feat.atttributes = { OID: 1 };
+            var myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+            var urlencoded = new URLSearchParams();
+            urlencoded.append("f", "json");
+            urlencoded.append("returnZ", "true");
+            urlencoded.append("DEMResolution", "FINEST");
+            urlencoded.append("ProfileIDField", "ObjectID");
+            //format
+            var format = {
+                fields: [{ name: "OID", type: "esriFieldTypeObjectID", alias: "OID" }],
+                geometryType: "esriGeometryPolyline",
+                features: [feat],
+                sr: { wkid: 102100 },
+            };
+            urlencoded.append("InputLineFeatures", JSON.stringify(format));
+            var requestOptions = {
+                method: "POST",
+                headers: myHeaders,
+                body: urlencoded,
+                redirect: "follow",
+            };
+            return fetch("https://elevation.arcgis.com/arcgis/rest/services/Tools/ElevationSync/GPServer/Profile/execute", requestOptions);
+        };
         ElevationProfileViewModel.prototype.getChartData = function (r) {
             // const result = JSON.parse(r);
             var ptArray = JSON.parse(r); //result.results[0].value.features[0].geometry.paths[0];
@@ -36,6 +65,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             var higherSlope = Uitls_1.GetSegmentsWithHigherSlope(ptArray, this.slopeThreshold);
             var higherSlopeLine = GraphStyles_1.CreateHigherSlopeLine(higherSlope);
             var data = [normalLine, higherSlopeLine];
+            console.log(data);
             var options = GraphStyles_1.GetGraphOptions(ptArray);
             this.ptArray = ptArray;
             return [data, options];
@@ -79,6 +109,9 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
         __decorate([
             decorators_1.property()
         ], ElevationProfileViewModel.prototype, "ptArray", void 0);
+        __decorate([
+            decorators_1.property()
+        ], ElevationProfileViewModel.prototype, "state", void 0);
         ElevationProfileViewModel = __decorate([
             decorators_1.subclass("esri.widgets.ElevationProfileViewModel")
         ], ElevationProfileViewModel);

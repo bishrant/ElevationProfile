@@ -33,8 +33,9 @@ const CalculateLength = (ptArray: any) => {
                 paths: [myArray],
                 spatialReference: { wkid: 102100 }
             });
-            var l = planarLength(line, "feet");
-            ptArray[i].push(l.toPrecision(2));
+            var l = planarLength(line, "miles");
+          ptArray[i].push(parseFloat(l.toPrecision(2)));
+          console.log(l, l.toPrecision(2));
         }
     }
     return ptArray;

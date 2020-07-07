@@ -35,11 +35,45 @@ class ElevationProfileViewModel extends declared(Accessor) {
   plot: any;
 
   @property()
-  private ptArray: any;
+  private ptArray: any = [];
+
+  @property()
+  state: string = "idle";
+
+  GetElevationData(graphic: Graphic) {
+    let feat = graphic.toJSON();
+    feat.atttributes = { OID: 1 };
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+    var urlencoded = new URLSearchParams();
+    urlencoded.append("f", "json");
+    urlencoded.append("returnZ", "true");
+    urlencoded.append("DEMResolution", "FINEST");
+    urlencoded.append("ProfileIDField", "ObjectID");
+    //format
+    let format = {
+      fields: [{ name: "OID", type: "esriFieldTypeObjectID", alias: "OID" }],
+      geometryType: "esriGeometryPolyline",
+      features: [feat],
+      sr: { wkid: 102100 },
+    };
+    urlencoded.append("InputLineFeatures", JSON.stringify(format));
+    var requestOptions: any = {
+      method: "POST",
+      headers: myHeaders,
+      body: urlencoded,
+      redirect: "follow",
+    };
+    return fetch(
+      "https://elevation.arcgis.com/arcgis/rest/services/Tools/ElevationSync/GPServer/Profile/execute",
+      requestOptions
+    )
+      
+  }
 
   getChartData(r: any) {
     // const result = JSON.parse(r);
-    let ptArray = JSON.parse(r); //result.results[0].value.features[0].geometry.paths[0];
+    let ptArray = JSON.parse(r) //result.results[0].value.features[0].geometry.paths[0];
     ptArray = CalculateLength(ptArray);
     const normalLine = CreateNormalElevationLine(ptArray);
 
@@ -50,13 +84,14 @@ class ElevationProfileViewModel extends declared(Accessor) {
     );
     var higherSlopeLine = CreateHigherSlopeLine(higherSlope);
 
-    var data = [normalLine, higherSlopeLine] as any;
+      var data = [normalLine, higherSlopeLine] as any;
+      console.log(data);
     const options = GetGraphOptions(ptArray);
     this.ptArray = ptArray;
     return [data, options];
   }
 
-    initializeHover(ptArray: any, mapView: __esri.MapView) {
+  initializeHover(ptArray: any, mapView: __esri.MapView) {
     var myPlot: any = document.getElementById("test");
     myPlot
       .on("plotly_hover", function (data: any) {

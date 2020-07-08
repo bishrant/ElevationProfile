@@ -1,16 +1,19 @@
 .elevation-profile {
     display: flex;
     flex-direction: column;
+    width: 600px;
+    height: 400px;
 }
 
 .elevation-profile__chart {
-    /* height: 300px;  */
-    /* width: 600px; */
+    height: 340px; 
+    width: 100%;
 }
 
 .elevation-profile__infobar {
     display: flex;
-    align-items: center;
+    /* align-items: center; */
+    flex-direction: column;
 }
 .elevation-profile__hidden {
     display: none;
@@ -22,7 +25,11 @@
     flex-direction: column;
 
 }
-
+.slopeIndicator {
+    display: flex;
+    align-items: center;
+    margin-top: -30px;
+}
 .profileDirection {
    height: 35px;
     width: 35px;
@@ -30,4 +37,14 @@
     border-radius: 35px;
     background: gray;
     border: none;
+    /* float: left; */
+    margin-left: 20px;
+}
+.createreportBar {
+        margin-left: auto;
+    margin-right: 10px;
+}
+.chartBottomBar {
+    display: flex;
+    align-items: center;
 }

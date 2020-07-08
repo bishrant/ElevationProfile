@@ -56,8 +56,17 @@ const GetGraphOptions = (ptArray: any) => {
     dragMode: false,
     displayModeBar: false,
     scrollZoom: false,
+    width: 600,
+    height: 340,
+    margin: {
+      l: 50,
+      t: 10,
+      r: 20,
+      b: 10,
+    },
     // staticPlot: true,
     plot_bgcolor: "rgba(0,0,0,0)",
+    autosize: true,
     paper_bgcolor: "rgba(0,0,0,0)",
     hoverlabel: {
       bgcolor: "black",
@@ -66,8 +75,11 @@ const GetGraphOptions = (ptArray: any) => {
     xaxis: {
       showgrid: false,
       fixedrange: true,
+      automargin: true,
+      standoff: 10,
       title: {
         text: "Distance along profile (feet)",
+        standoff: 10,
         font: {
           size: 18,
           color: "black",

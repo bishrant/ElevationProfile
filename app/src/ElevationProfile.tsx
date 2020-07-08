@@ -53,14 +53,15 @@ class ElevationProfile extends declared(Widget) {
     const { slopeThreshold, state } = this.viewModel;
     return (
       <div class={this.classes(CSS.esriWidget, CSS.root)}>
+
+
+        <div id="myDiv" class={this.classes({ 'elevation-profile__chart': state !== 'idle', 'elevation-profile__hidden': state !== 'ready' })}></div>
         <div>
           {state === 'idle' ? null :
             state === 'loading' ? this._renderLoader() :
               this._renderElevationProfile()
           }
-        </div> 
-        
-        <div id="myDiv" class={this.classes({'elevation-profile__chart' : state !== 'idle', 'elevation-profile__hidden': state !== 'ready'})}></div>
+        </div>
       </div>
     );
   }
@@ -72,7 +73,7 @@ class ElevationProfile extends declared(Widget) {
 
 
   GetStatistics() {
-// gets the stats needed for PLMO report
+    // gets the stats needed for PLMO report
     // required outputs include 
     // Total Distance: 20.7 mi
     // Maximum Slope: 11.3 %
@@ -101,9 +102,9 @@ class ElevationProfile extends declared(Widget) {
 
   private _renderLoader() {
     return (
-      <div class ={this.classes(CSS.chart, CSS.loading)}>
+      <div class={this.classes(CSS.chart, CSS.loading)}>
         <div>Loading</div>
-        <img src='http://superstorefinder.net/support/wp-content/uploads/2018/01/blue_loading.gif' style="width: 100px" alt="loading"/>
+        <img src='http://superstorefinder.net/support/wp-content/uploads/2018/01/blue_loading.gif' style="width: 100px" alt="loading" />
       </div>
     );
   }
@@ -116,17 +117,26 @@ class ElevationProfile extends declared(Widget) {
       [CSS.rightArrow]: this.reveresed
     }
     return (
-      <div class ={CSS.widgetInfoBar}>
-        <svg height="25" width="25">
-          <line x1="0" y1="12" x2="25" y2="12" style="stroke:rgb(255,0,0);stroke-width:4" />
-        </svg>
-        Steep slope &gt; { slopeThreshold}%
-       
-        <button onclick={this.exportImage}>Create Report</button>
-        <button bind={this} onclick={this.reverseProfile} class="profileDirection" title="reveser">
-          <i class={this.classes(classes)} title="reveser"></i>
-        </button>
+      <div class={CSS.widgetInfoBar}>
+        <div>
+          <span class="slopeIndicator">
+            <svg height="25" width="25">
+              <line x1="0" y1="12" x2="25" y2="12" style="stroke:rgb(255,0,0);stroke-width:4" />
+            </svg>
+            Steep slope &gt; {slopeThreshold}%
+          </span>
+        </div>
+        <div class='chartBottomBar'>
+          <button bind={this} onclick={this.reverseProfile} class="profileDirection" title="reveser">
+            <i class={this.classes(classes)} title="reveser"></i>
+          </button>
+        <span class="createreportBar">
+          <b> Project Name: </b><input type="text" /><button onclick={this.exportImage}>Create Report</button>
+          </span>
+          </div>
       </div>
+
+
     );
   }
 
@@ -138,7 +148,7 @@ class ElevationProfile extends declared(Widget) {
     this.reveresed = !this.reveresed;
     let reversedPtArray = this.viewModel.ptArray.slice();
     reversedPtArray.reverse();
-    reversedPtArray  = reversedPtArray.map((r: any) => [r[0], r[1], r[2]]);
+    reversedPtArray = reversedPtArray.map((r: any) => [r[0], r[1], r[2]]);
     this.createChart(reversedPtArray);
   }
 
@@ -160,7 +170,7 @@ class ElevationProfile extends declared(Widget) {
       view: this.mapView
     });
     this._DrawingComplete();
-    
+
   }
 
 
@@ -179,7 +189,7 @@ class ElevationProfile extends declared(Widget) {
     this.viewModel.state = "loading";
     try {
       let elevationData = await this.viewModel.GetElevationData(graphic);
-      
+
       const result = await elevationData.text();
       const resultJson = JSON.parse(result);
       const ptArray = resultJson.results[0].value.features[0].geometry.paths[0];
@@ -193,7 +203,7 @@ class ElevationProfile extends declared(Widget) {
 
   protected _renderChart(data: any[], options: any): any {
     let that = this;
-    Plotly.newPlot('myDiv', data, options, { displayModeBar: false, responsive: true, }).then(function (plot: any) {
+    Plotly.newPlot('myDiv', data, options, { displayModeBar: false, responsive: true, autosize: true }).then(function (plot: any) {
       that.viewModel.plot = plot;
     })
     return null;

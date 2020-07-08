@@ -38,7 +38,7 @@ class ElevationProfileViewModel extends declared(Accessor) {
   userGraphic: Graphic;
 
   @property()
-  private ptArray: any = [];
+  ptArray: any = [];
 
   @property()
   state: string = "idle";
@@ -88,14 +88,13 @@ class ElevationProfileViewModel extends declared(Accessor) {
     return s;
   }
 
-  getChartData(r: any) {
-    // const result = JSON.parse(r);
-    let ptArray = JSON.parse(r); //result.results[0].value.features[0].geometry.paths[0];
+  getChartData(ptArray0: any) {
+    let ptArray = ptArray0.slice();
     ptArray = CalculateLength(ptArray);
+    ptArray = CalculateSlope(ptArray);
     let normalLine: any = CreateNormalElevationLine(ptArray);
     var data: any;
     if (this.slopeThreshold > 0) {
-      ptArray = CalculateSlope(ptArray);
       const higherSlope = GetSegmentsWithHigherSlope(
         ptArray,
         this.slopeThreshold
@@ -108,12 +107,13 @@ class ElevationProfileViewModel extends declared(Accessor) {
     }
 
     const options = GetGraphOptions(ptArray);
-    this.ptArray = ptArray;
-    return [data, options];
+    // this.ptArray = ptArray;
+    return [data, options, ptArray];
   }
 
-  initializeHover(ptArray: any, mapView: __esri.MapView) {
-    var myPlot: any = document.getElementById("test");
+  initializeHover(Plotly: any, ptArray: any, mapView: __esri.MapView) {
+    console.log(ptArray);
+    var myPlot: any = document.getElementById("myDiv");
     myPlot
       .on("plotly_hover", function (data: any) {
         const pId = data.points[0].pointIndex;
@@ -142,6 +142,36 @@ class ElevationProfileViewModel extends declared(Accessor) {
       })
       .on("plotly_unhover", function (data: any) {
         mapView.graphics.removeAll();
+      });
+
+      myPlot.on("plotly_hover", function (data: any) {
+        var pn = "",
+          tn = "",
+          colors = [];
+        for (var i = 0; i < data.points.length; i++) {
+          pn = data.points[i].pointNumber;
+          tn = data.points[i].curveNumber;
+          colors = data.points[i].data.marker.color;
+        }
+        colors[pn] = "#C54C82";
+
+        var update = { marker: { color: colors, size: 16 } };
+        Plotly.restyle("myDiv", update, [tn as any]);
+      });
+
+      myPlot.on("plotly_unhover", function (data: any) {
+        var pn = "",
+          tn = "",
+          colors = [];
+        for (var i = 0; i < data.points.length; i++) {
+          pn = data.points[i].pointNumber;
+          tn = data.points[i].curveNumber;
+          colors = data.points[i].data.marker.color;
+        }
+        colors[pn] = "transparent";
+
+        var update = { marker: { color: colors, size: 16 } };
+        Plotly.restyle("myDiv", update, [tn]);
       });
   }
 }

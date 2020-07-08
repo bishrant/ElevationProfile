@@ -11,10 +11,12 @@
       "preserveConstEnums": true,
       "suppressImplicitAnyIndexErrors": true,
       "moduleResolution": "node",
-      "lib": [ "DOM", "ES5"]
+      "lib": [ "DOM", "ES5"],
+      "outDir": "./app/dist",
+      
     },
     "include": [
-      "./app/*","./app/decs.d.ts"
+      "./app/src/*","app/src/decs.d.ts"
     ],
     "exclude": [
       "node_modules"

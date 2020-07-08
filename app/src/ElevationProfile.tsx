@@ -66,6 +66,36 @@ class ElevationProfile extends declared(Widget) {
     this.initSketchVM();
   }
 
+
+
+  GetStatistics() {
+// gets the stats needed for PLMO report
+    // required outputs include 
+    // Total Distance: 20.7 mi
+    // Maximum Slope: 11.3 %
+    //   Minimum Slope: 0 %
+    //     Mean Slope: 2.4 %
+    //       Steep Slopes(> 8 %): 2 mi
+    // Elevation Range: 376 ft
+    // Minimum Elevation: 2, 262 ft
+    // Maximum Elevation: 2, 637 ft
+    // Total Elevation Gain: 1, 301 ft
+    // Total Elevation Lost: 1, 312 ft
+    return {
+      TotalDistance: 0,
+      MaximumSlope: 0,
+      MinimumSlope: 0,
+      MeanSlope: 0,
+      SteepSlopes: 0,
+      ElevationRange: 0,
+      MinimumElevation: 0,
+      MaximumElevation: 0,
+      TotalElevationGain: 0,
+      TotalElevationLost: 0
+
+    }
+  }
+
   private _renderLoader() {
     return (
       <div class ={this.classes(CSS.chart, CSS.loading)}>
@@ -85,16 +115,17 @@ class ElevationProfile extends declared(Widget) {
         Steep slope &gt; { slopeThreshold}%
        
         <button onclick={this.exportImage}>Create Report</button>
-        <button onclick={this.reverseProfile}>Reverse Profile direction</button>
+        <button bind={this} onclick={this.reverseProfile}>Reverse Profile direction</button>
       </div>
     );
   }
+
   start() {
     this.sketchVM.create('polyline');
   }
 
   reverseProfile() {
-    
+    console.log(this.viewModel.ptArray);
   }
 
   exportImage() {
@@ -115,7 +146,7 @@ class ElevationProfile extends declared(Widget) {
       view: this.mapView
     });
     this._DrawingComplete();
-    this.createChart(dt);
+    
   }
 
 
@@ -124,7 +155,7 @@ class ElevationProfile extends declared(Widget) {
     this.sketchVM.on('create', function (evt: any) {
       if (evt.state === 'complete') {
         console.log(evt.graphic);
-        this.viewModel.userGraphic = evt.graphic;
+        that.viewModel.userGraphic = evt.graphic;
         that.displayLineChart(evt.graphic);
       }
     })
@@ -134,7 +165,7 @@ class ElevationProfile extends declared(Widget) {
     this.viewModel.state = "loading";
     try {
       let elevationData = await this.viewModel.GetElevationData(graphic);
-      this.viewModel.state = 'ready';
+      
       let result = await elevationData.text();
       
       this.createChart(result);
@@ -147,18 +178,27 @@ class ElevationProfile extends declared(Widget) {
 
   protected _renderChart(data: any[], options: any): any {
     let that = this;
-    Plotly.newPlot('test', data, options, { displayModeBar: false }).then(function (plot: any) {
+    Plotly.newPlot('myDiv', data, options, { displayModeBar: false, responsive: true, }).then(function (plot: any) {
       that.viewModel.plot = plot;
     })
     return null;
   }
 
   private createChart(r: any) {
-    // const result = JSON.parse(r);
-    let ptArray = JSON.parse(r) //result.results[0].value.features[0].geometry.paths[0];
-    const [data, options] = this.viewModel.getChartData(r);
+    console.log(r);
+    this.viewModel.state = 'ready';
+    const result = JSON.parse(r);
+    let ptArray = result.results[0].value.features[0].geometry.paths[0];
+    const [data, options, ptArrayNew] = this.viewModel.getChartData(ptArray);
     this._renderChart(data, options);
-    this.viewModel.initializeHover(ptArray, this.mapView);
+    this.viewModel.initializeHover(Plotly, ptArrayNew, this.mapView);
+    this.viewModel.ptArray = ptArrayNew;
+    console.log(ptArrayNew);
+  }
+
+  startTest() {
+    console.log(1);
+    this.createChart(dt);
   }
 
 }

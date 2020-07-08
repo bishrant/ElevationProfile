@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no" />
-  <title>ArcGIS JSAPI 4.15 TypeScript Demo</title>
+  <title>Elevation Profile</title>
   <link rel="stylesheet" href="https://js.arcgis.com/4.15/esri/themes/light/main.css">
     <link rel="stylesheet" href="./app/css/main.css">
   <script>
@@ -12,7 +12,7 @@
       packages: [
         {
           name: "app",
-          location: "/app"
+          location: "/app/dist/"
         },
 
       ]
@@ -42,11 +42,9 @@
         view.when(function () {
           document.getElementById('createGraph').addEventListener("click", (function(e) {
             console.log('clicked');
-            widget.start();
+            widget.startTest();
           }));
           view.ui.add(widget, 'bottom-right');
-
-
         })
       });
   </script>

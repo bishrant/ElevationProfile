@@ -12,7 +12,7 @@ import Graphic = require("esri/Graphic");
 import * as Plotly from 'https://cdn.plot.ly/plotly-latest.min.js';
 import { dt } from "./Uitls";
 import ElevationProfileViewModel = require("./ElevationProfileViewModel");
-import { ElevationProfileProperties } from "./interfaces";
+import { ElevationProfileProperties, ElevationUnits } from "./interfaces";
 import { CSS } from './resources';
 
 @subclass("esri.widgets.ElevationProfile")
@@ -36,7 +36,12 @@ class ElevationProfile extends declared(Widget) {
   plot: any;
 
   @property()
-  reveresed: boolean = false;
+  unit: ElevationUnits = 'miles';
+
+  @property()
+  private reveresed: boolean = false;
+  @property()
+  private points: any;
 
   @property()
   @renderable([
@@ -123,7 +128,7 @@ class ElevationProfile extends declared(Widget) {
             <svg height="25" width="25">
               <line x1="0" y1="12" x2="25" y2="12" style="stroke:rgb(255,0,0);stroke-width:4" />
             </svg>
-            Steep slope &gt; {slopeThreshold}%
+            &nbsp;&nbsp;Steep slope &gt; {slopeThreshold}%
           </span>
         </div>
         <div class='chartBottomBar'>
@@ -146,10 +151,17 @@ class ElevationProfile extends declared(Widget) {
 
   reverseProfile() {
     this.reveresed = !this.reveresed;
-    let reversedPtArray = this.viewModel.ptArray.slice();
-    reversedPtArray.reverse();
-    reversedPtArray = reversedPtArray.map((r: any) => [r[0], r[1], r[2]]);
-    this.createChart(reversedPtArray);
+    let reversedPtArray = JSON.parse(JSON.stringify(this.viewModel.ptArrayOriginal));
+    console.log(reversedPtArray);
+    const reveresedArrayNew = JSON.parse(JSON.stringify(reversedPtArray.reverse()));
+    console.log(reveresedArrayNew, reversedPtArray);
+    // const reveresedArrayNew = reversedPtArray.slice().map((r: any) => [r[0], r[1], r[2]]);
+
+    // const [data, options, ptArrayNew] = this.viewModel.getChartData(reveresedArrayNew, this.unit);
+    // this._renderChart(data, options);
+    // console.log(reveresedArrayNew);
+    // this.viewModel.initializeHover(Plotly, ptArrayNew, this.mapView);
+    // this.createChart(reversedPtArray);
   }
 
   exportImage() {
@@ -192,8 +204,9 @@ class ElevationProfile extends declared(Widget) {
 
       const result = await elevationData.text();
       const resultJson = JSON.parse(result);
-      const ptArray = resultJson.results[0].value.features[0].geometry.paths[0];
-      this.createChart(ptArray);
+      const ptArray = resultJson.results[0].value.features[0].geometry.paths[0]
+      this.viewModel.ptArrayOriginal = ptArray.slice();
+      this.createChart(ptArray.slice());
     } catch (error) {
       this.viewModel.state = "Error";
       console.error(error);
@@ -209,20 +222,24 @@ class ElevationProfile extends declared(Widget) {
     return null;
   }
 
-  private createChart(ptArray: any) {
+  private createChart(dd: any) {
     this.viewModel.state = 'ready';
-    // const result = JSON.parse(r);
-    // let ptArray = result.results[0].value.features[0].geometry.paths[0];
-    const [data, options, ptArrayNew] = this.viewModel.getChartData(ptArray);
+    const d = JSON.parse(JSON.stringify(dd));
+    
+    const [data, options, ptArrayNew] = this.viewModel.getChartData(d, this.unit);
+    
     this._renderChart(data, options);
-    this.viewModel.initializeHover(Plotly, ptArrayNew, this.mapView);
-    this.viewModel.ptArray = ptArrayNew;
+    // console.log(this.points);
+    // this.viewModel.initializeHover(Plotly, ptArrayNew, this.mapView);
+    // this.viewModel.ptArray = ptArrayNew;
   }
 
   startTest() {
-    const resultJson = JSON.parse(dt);
-    const ptArray = resultJson.results[0].value.features[0].geometry.paths[0];
-    this.createChart(ptArray);
+    const rj = JSON.parse(dt);
+    const _ptArray = rj.results[0].value.features[0].geometry.paths[0];
+    this.viewModel.ptArrayOriginal  = JSON.parse(JSON.stringify(_ptArray));
+    this.createChart(_ptArray);
+    console.log(_ptArray, this.viewModel.ptArrayOriginal);
   }
 
 }

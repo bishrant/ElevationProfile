@@ -1,3 +1,4 @@
+import { ElevationUnits } from './interfaces.d';
 import Polyline from "esri/geometry/Polyline";
 import { planarLength } from "esri/geometry/geometryEngine";
 
@@ -20,27 +21,36 @@ const max = (input: any) => {
   return Math.max.apply(null, input);
 };
 
-const CalculateLength = (ptArrayOld: any) => {
-  const ptArray = ptArrayOld.slice();
-  for (let i in ptArray) {
-    if (parseInt(i) === 0) {
-      ptArray[i].push(0);
-    } else {
-      var myArray = ptArray.slice().splice(0, parseInt(i) + 1);
-      var line = new Polyline({
-        hasZ: true,
-        paths: [myArray],
-        spatialReference: { wkid: 102100 },
-      });
-      var l = planarLength(line, "miles");
-      ptArray[i].push(parseFloat(l.toPrecision(2)));
-    }
+const CalculateLength = (ptArrayOld: any, unit: ElevationUnits = 'miles') => {
+  var pts = JSON.parse(JSON.stringify(ptArrayOld));
+  for (let i = 0; i < pts.length; i++) {
+    var myArray = pts.slice().splice(0, i + 1);
+    var line = new Polyline({
+      hasZ: true,
+      paths: [myArray],
+      spatialReference: { wkid: 102100 },
+    });
+    var l = planarLength(line, unit);
+    pts[i].push(parseFloat(l.toPrecision(2)));
+  //   // if (parseInt(i) === 0) {
+  //   //   pts[i].push(0);
+  //   // } else {
+  //   //   var myArray = pts.slice().splice(0, parseInt(i) + 1);
+  //   //   var line = new Polyline({
+  //   //     hasZ: true,
+  //   //     paths: [myArray],
+  //   //     spatialReference: { wkid: 102100 },
+  //   //   });
+  //   //   var l = planarLength(line, unit);
+  //   //   pts[i].push(parseFloat(l.toPrecision(2)));
+    
+    
   }
-  return ptArray;
+  return pts;
 };
 
-const CalculateSlope = (ptArray: any) => {
-  const ptArrayNew = ptArray.slice();
+const CalculateSlope = (ptArrayOld: any) => {
+  const ptArrayNew = JSON.parse(JSON.stringify(ptArrayOld));
   ptArrayNew.map((p: any, i: any) => {
     if (i + 1 >= ptArrayNew.length) {
       p.push(0);

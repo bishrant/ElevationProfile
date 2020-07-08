@@ -7,3 +7,5 @@ export interface ElevationProfileProperties
 export interface ElevationProfileViewModelProperties {
   slopeThreshold?: number;
 }
+
+export type ElevationUnits = 'meters' | 'feet' | 'kilometers' | 'miles' | 'nautical-miles' | 'yards';

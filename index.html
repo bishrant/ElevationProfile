@@ -38,7 +38,8 @@
         });
         var widget = new ElevationProfile({
           mapView: view,
-          slopeThreshold: 4
+          slopeThreshold: 4,
+          unit: 'feet'
         });
         view.when(function () {
           document.getElementById('createGraph').addEventListener("click", (function(e) {
@@ -46,6 +47,7 @@
             widget.startTest();
           }));
           view.ui.add(widget, 'bottom-right');
+          window.widget = widget;
         })
       });
   </script>

@@ -1,4 +1,30 @@
+import { ElevationUnits } from './interfaces.d';
 import { min, max } from "./Uitls";
+const convertor = {
+  meters: 1,
+  feet: 3.281,
+  kilometers: 0.001,
+  miles: 1 / 1609,
+  "nautical-miles": 1 / 1852,
+  yards: 1.094,
+};
+
+const elevationUnitMap = {
+  meters: "meters",
+  feet: "feet",
+  kilometers: "meters",
+  miles: "feet",
+  "nautical-miles": "feet",
+  yards: "feet",
+};
+const lengthAbbrMap = {
+  meters: "m.",
+  feet: "ft.",
+  kilometers: "km.",
+  miles: "mi.",
+  "nautical-miles": "n.m.",
+  yards: "yd.",
+};
 
 const CreateHigherSlopeLine = (higherSlopeArray: any) => {
   return {
@@ -18,8 +44,19 @@ const CreateHigherSlopeLine = (higherSlopeArray: any) => {
   };
 };
 
-const CreateNormalElevationLine = (ptArray0: any) => {
+const ConvertElevationUnits = (ptArray0: any, unit: ElevationUnits) => {
   const ptArray = ptArray0.slice();
+  const multiplier = convertor[elevationUnitMap[unit]];
+  ptArray.forEach((p: any) => {
+    p[2] = p[2] * multiplier;
+  });
+  return ptArray;
+};
+
+const CreateNormalElevationLine = (ptArray0: any, unit: ElevationUnits) => {
+  const ptArray = ptArray0.slice();
+  const abbr = elevationUnitMap[unit] === 'meters' ? 'm.' : 'ft.';
+  const labbr = lengthAbbrMap[unit];
   return {
     x: ptArray.map((p: any) => p[3]),
     y: ptArray.map((p: any) => p[2]),
@@ -39,15 +76,16 @@ const CreateNormalElevationLine = (ptArray0: any) => {
       width: 2,
     },
     hovertemplate:
-      "%{y:.2f} ft elevation<br>" +
-      "%{x:.2f} mi from start<br>" +
-      "%{customdata[0]:.2f} ft net elevation change<br>" +
+      "%{y:.2f} "+ abbr +" elevation<br>" +
+      "%{x:.2f} "+ labbr +" from start<br>" +
+      "%{customdata[0]:.2f} "+ abbr +" net elevation change<br>" +
       "%{customdata[1]:.2f}% forward slope",
   };
 };
 
-const GetGraphOptions = (ptArray: any) => {
+const GetGraphOptions = (ptArray: any, unit: ElevationUnits) => {
   const elev = ptArray.map((p: any) => p[2]);
+  const abbr = elevationUnitMap[unit];
   const options = {
     hoverMode: "closest",
     hoverDistance: -1,
@@ -59,7 +97,7 @@ const GetGraphOptions = (ptArray: any) => {
     width: 600,
     height: 340,
     margin: {
-      l: 50,
+      l: 60,
       t: 10,
       r: 20,
       b: 10,
@@ -78,10 +116,10 @@ const GetGraphOptions = (ptArray: any) => {
       automargin: true,
       standoff: 10,
       title: {
-        text: "Distance along profile (feet)",
+        text: "<b>Distance ("+unit+")</b>",
         standoff: 10,
         font: {
-          size: 18,
+          size: 15,
           color: "black",
           family: '"Open Sans", verdana, arial, sans-serif;',
         },
@@ -91,12 +129,16 @@ const GetGraphOptions = (ptArray: any) => {
       spikethickness: 1,
     },
     yaxis: {
-      range: [min(elev) * 0.95, max(elev) * 1.05],
+      range: [
+        min(elev) > 100 ? min(elev) - 10 : min(elev) - 5,
+        max(elev) > 100 ? max(elev) + 10 : max(elev) + 5,
+      ],
       fixedrange: true,
       title: {
-        text: "Elevation (feet)",
+        text: "<b>Elevation (" + abbr + ")</b>",
+        standoff: 1,
         font: {
-          size: 18,
+          size: 15,
           color: "black",
           family: '"Open Sans", verdana, arial, sans-serif;',
         },
@@ -106,4 +148,9 @@ const GetGraphOptions = (ptArray: any) => {
   return options;
 };
 
-export { CreateHigherSlopeLine, CreateNormalElevationLine, GetGraphOptions };
+export {
+  CreateHigherSlopeLine,
+  CreateNormalElevationLine,
+  GetGraphOptions,
+  ConvertElevationUnits,
+};

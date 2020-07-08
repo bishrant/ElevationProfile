@@ -22,3 +22,12 @@
     flex-direction: column;
 
 }
+
+.profileDirection {
+   height: 35px;
+    width: 35px;
+    font-size: 25px;
+    border-radius: 35px;
+    background: gray;
+    border: none;
+}

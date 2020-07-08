@@ -36,6 +36,9 @@ class ElevationProfile extends declared(Widget) {
   plot: any;
 
   @property()
+  reveresed: boolean = false;
+
+  @property()
   @renderable([
     "viewModel.slopeThreshold",
     "viewModel.state"
@@ -107,6 +110,11 @@ class ElevationProfile extends declared(Widget) {
 
   private _renderElevationProfile() {
     const { slopeThreshold, state } = this.viewModel;
+    const classes = {
+      [CSS.fas]: true,
+      [CSS.leftArrow]: !this.reveresed,
+      [CSS.rightArrow]: this.reveresed
+    }
     return (
       <div class ={CSS.widgetInfoBar}>
         <svg height="25" width="25">
@@ -115,7 +123,9 @@ class ElevationProfile extends declared(Widget) {
         Steep slope &gt; { slopeThreshold}%
        
         <button onclick={this.exportImage}>Create Report</button>
-        <button bind={this} onclick={this.reverseProfile}>Reverse Profile direction</button>
+        <button bind={this} onclick={this.reverseProfile} class="profileDirection" title="reveser">
+          <i class={this.classes(classes)} title="reveser"></i>
+        </button>
       </div>
     );
   }
@@ -125,7 +135,11 @@ class ElevationProfile extends declared(Widget) {
   }
 
   reverseProfile() {
-    console.log(this.viewModel.ptArray);
+    this.reveresed = !this.reveresed;
+    let reversedPtArray = this.viewModel.ptArray.slice();
+    reversedPtArray.reverse();
+    reversedPtArray  = reversedPtArray.map((r: any) => [r[0], r[1], r[2]]);
+    this.createChart(reversedPtArray);
   }
 
   exportImage() {
@@ -166,9 +180,10 @@ class ElevationProfile extends declared(Widget) {
     try {
       let elevationData = await this.viewModel.GetElevationData(graphic);
       
-      let result = await elevationData.text();
-      
-      this.createChart(result);
+      const result = await elevationData.text();
+      const resultJson = JSON.parse(result);
+      const ptArray = resultJson.results[0].value.features[0].geometry.paths[0];
+      this.createChart(ptArray);
     } catch (error) {
       this.viewModel.state = "Error";
       console.error(error);
@@ -184,21 +199,20 @@ class ElevationProfile extends declared(Widget) {
     return null;
   }
 
-  private createChart(r: any) {
-    console.log(r);
+  private createChart(ptArray: any) {
     this.viewModel.state = 'ready';
-    const result = JSON.parse(r);
-    let ptArray = result.results[0].value.features[0].geometry.paths[0];
+    // const result = JSON.parse(r);
+    // let ptArray = result.results[0].value.features[0].geometry.paths[0];
     const [data, options, ptArrayNew] = this.viewModel.getChartData(ptArray);
     this._renderChart(data, options);
     this.viewModel.initializeHover(Plotly, ptArrayNew, this.mapView);
     this.viewModel.ptArray = ptArrayNew;
-    console.log(ptArrayNew);
   }
 
   startTest() {
-    console.log(1);
-    this.createChart(dt);
+    const resultJson = JSON.parse(dt);
+    const ptArray = resultJson.results[0].value.features[0].geometry.paths[0];
+    this.createChart(ptArray);
   }
 
 }

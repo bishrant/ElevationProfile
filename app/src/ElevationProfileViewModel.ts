@@ -75,13 +75,11 @@ class ElevationProfileViewModel extends declared(Accessor) {
     );
   }
 
-  getChartData(_pts: any, unit: ElevationUnits) {
-    let pts = _pts.slice();
-
+  getChartData(pts: any, unit: ElevationUnits) {   
     pts = ConvertElevationUnits(pts, unit);
-
     pts = CalculateLength(pts, unit);
     pts = CalculateSlope(pts);
+
     let normalLine: any = CreateNormalElevationLine(pts, unit);
     var data: any;
     if (this.slopeThreshold > 0) {
@@ -129,35 +127,35 @@ class ElevationProfileViewModel extends declared(Accessor) {
         mapView.graphics.removeAll();
       });
 
-    myPlot.on("plotly_hover", function (data: any) {
-      var pn = "",
-        tn = "",
-        colors = [];
-      for (var i = 0; i < data.points.length; i++) {
-        pn = data.points[i].pointNumber;
-        tn = data.points[i].curveNumber;
-        colors = data.points[i].data.marker.color;
-      }
-      colors[pn] = "#C54C82";
+    // myPlot.on("plotly_hover", function (data: any) {
+    //   var pn = "",
+    //     tn = "",
+    //     colors = [];
+    //   for (var i = 0; i < data.points.length; i++) {
+    //     pn = data.points[i].pointNumber;
+    //     tn = data.points[i].curveNumber;
+    //     colors = data.points[i].data.marker.color;
+    //   }
+    //   colors[pn] = "#C54C82";
 
-      var update = { marker: { color: colors, size: 16 } };
-      Plotly.restyle("myDiv", update, [tn as any]);
-    });
+    //   var update = { marker: { color: colors, size: 16 } };
+    //   Plotly.restyle("myDiv", update, [tn as any]);
+    // });
 
-    myPlot.on("plotly_unhover", function (data: any) {
-      var pn = "",
-        tn = "",
-        colors = [];
-      for (var i = 0; i < data.points.length; i++) {
-        pn = data.points[i].pointNumber;
-        tn = data.points[i].curveNumber;
-        colors = data.points[i].data.marker.color;
-      }
-      colors[pn] = "transparent";
+    // myPlot.on("plotly_unhover", function (data: any) {
+    //   var pn = "",
+    //     tn = "",
+    //     colors = [];
+    //   for (var i = 0; i < data.points.length; i++) {
+    //     pn = data.points[i].pointNumber;
+    //     tn = data.points[i].curveNumber;
+    //     colors = data.points[i].data.marker.color;
+    //   }
+    //   colors[pn] = "transparent";
 
-      var update = { marker: { color: colors, size: 16 } };
-      Plotly.restyle("myDiv", update, [tn]);
-    });
+    //   var update = { marker: { color: colors, size: 16 } };
+    //   Plotly.restyle("myDiv", update, [tn]);
+    // });
   }
 }
 

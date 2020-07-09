@@ -10,10 +10,11 @@ import SketchViewModel = require("esri/widgets/Sketch/SketchViewModel");
 import GraphicsLayer = require("esri/layers/GraphicsLayer");
 import Graphic = require("esri/Graphic");
 import * as Plotly from 'https://cdn.plot.ly/plotly-latest.min.js';
-import { dt } from "./Uitls";
+import { dt, CalculateLength, CalculateSlope, lengthAbbrMap, max, min, avg, CalculateSegmentLength, sum, Decimal, elevationUnitMap } from "./Uitls";
 import ElevationProfileViewModel = require("./ElevationProfileViewModel");
 import { ElevationProfileProperties, ElevationUnits } from "./interfaces";
 import { CSS } from './resources';
+import { ConvertElevationUnits } from "./GraphStyles";
 
 @subclass("esri.widgets.ElevationProfile")
 class ElevationProfile extends declared(Widget) {
@@ -40,8 +41,6 @@ class ElevationProfile extends declared(Widget) {
 
   @property()
   private reveresed: boolean = false;
-  @property()
-  private points: any;
 
   @property()
   @renderable([
@@ -58,8 +57,6 @@ class ElevationProfile extends declared(Widget) {
     const { slopeThreshold, state } = this.viewModel;
     return (
       <div class={this.classes(CSS.esriWidget, CSS.root)}>
-
-
         <div id="myDiv" class={this.classes({ 'elevation-profile__chart': state !== 'idle', 'elevation-profile__hidden': state !== 'ready' })}></div>
         <div>
           {state === 'idle' ? null :
@@ -78,6 +75,22 @@ class ElevationProfile extends declared(Widget) {
 
 
   GetStatistics() {
+    let pts = JSON.parse(JSON.stringify(this.viewModel.ptArrayOriginal));
+    pts = ConvertElevationUnits(pts, this.unit);
+    pts = CalculateLength(pts, this.unit);
+    pts = CalculateSlope(pts);
+    pts = CalculateSegmentLength(pts, this.unit);
+
+    const unitAbbr = " "+ lengthAbbrMap[this.unit];
+    const elevAbbr = " "+ lengthAbbrMap[elevationUnitMap[this.unit]];
+    console.log(pts);
+    const totalDistance = pts[pts.length-1][3];
+    const slopes = pts.map((p: any) => p[4]);
+    const steepSlopes = pts.filter((s: any) => s[4] > this.slopeThreshold).map((p: any) => p[5]);
+    const elevation = pts.map((p: any) => p[2]);
+    const elvBase = elevation[0];
+    const elevationDiff = elevation.map((p: any) => (p - elvBase));
+    const elevationRange = max(elevation)
     // gets the stats needed for PLMO report
     // required outputs include 
     // Total Distance: 20.7 mi
@@ -90,19 +103,24 @@ class ElevationProfile extends declared(Widget) {
     // Maximum Elevation: 2, 637 ft
     // Total Elevation Gain: 1, 301 ft
     // Total Elevation Lost: 1, 312 ft
+    console.log(elevationDiff, elvBase, elevation, pts);
     return {
-      TotalDistance: 0,
-      MaximumSlope: 0,
-      MinimumSlope: 0,
-      MeanSlope: 0,
-      SteepSlopes: 0,
-      ElevationRange: 0,
-      MinimumElevation: 0,
-      MaximumElevation: 0,
+      TotalDistance: totalDistance + unitAbbr,
+      MaximumSlope: max(slopes) + '%',
+      MinimumSlope: min(slopes) + '%',
+      MeanSlope: avg(slopes).toPrecision(2) + '%',
+      SteepSlopes: sum(steepSlopes) + unitAbbr,
+      ElevationRange: Math.abs(Decimal(max(elevation) - min(elevation))) + elevAbbr,
+      MinimumElevation: Decimal(min(elevation)) + elevAbbr,
+      MaximumElevation:  Decimal(max(elevation)) + elevAbbr,
       TotalElevationGain: 0,
       TotalElevationLost: 0
 
     }
+  }
+
+  createReport() {
+    console.log(this.GetStatistics());
   }
 
   private _renderLoader() {
@@ -115,7 +133,7 @@ class ElevationProfile extends declared(Widget) {
   }
 
   private _renderElevationProfile() {
-    const { slopeThreshold, state } = this.viewModel;
+    const { slopeThreshold } = this.viewModel;
     const classes = {
       [CSS.fas]: true,
       [CSS.leftArrow]: !this.reveresed,
@@ -135,8 +153,11 @@ class ElevationProfile extends declared(Widget) {
           <button bind={this} onclick={this.reverseProfile} class="profileDirection" title="reveser">
             <i class={this.classes(classes)} title="reveser"></i>
           </button>
+          <button bind={this} onclick={this.exit} class="profileDirection" title="reveser">
+            <i class='fa fa-times-circle' title="reveser"></i>
+          </button>
         <span class="createreportBar">
-          <b> Project Name: </b><input type="text" /><button onclick={this.exportImage}>Create Report</button>
+          <b> Project Name: </b><input type="text" /><button bind={this} onclick={this.createReport}>Create Report</button>
           </span>
           </div>
       </div>
@@ -151,17 +172,23 @@ class ElevationProfile extends declared(Widget) {
 
   reverseProfile() {
     this.reveresed = !this.reveresed;
+    const div = document.getElementById('myDiv');
+    Plotly.purge('myDiv');
+    div.outerHTML = div.outerHTML;
+    
     let reversedPtArray = JSON.parse(JSON.stringify(this.viewModel.ptArrayOriginal));
-    console.log(reversedPtArray);
-    const reveresedArrayNew = JSON.parse(JSON.stringify(reversedPtArray.reverse()));
-    console.log(reveresedArrayNew, reversedPtArray);
-    // const reveresedArrayNew = reversedPtArray.slice().map((r: any) => [r[0], r[1], r[2]]);
-
-    // const [data, options, ptArrayNew] = this.viewModel.getChartData(reveresedArrayNew, this.unit);
-    // this._renderChart(data, options);
+    let reveresedArrayNew;
+    if (this.reveresed) {
+      reveresedArrayNew = JSON.parse(JSON.stringify(reversedPtArray.reverse()));
+    } else {
+      reveresedArrayNew = JSON.parse(JSON.stringify(this.viewModel.ptArrayOriginal));
+    }
+    const [data, options, ptArrayNew] = this.viewModel.getChartData(reveresedArrayNew, this.unit);
+    this._renderChart(data, options);
     // console.log(reveresedArrayNew);
-    // this.viewModel.initializeHover(Plotly, ptArrayNew, this.mapView);
-    // this.createChart(reversedPtArray);
+    this.viewModel.initializeHover(Plotly, ptArrayNew, this.mapView);
+    reveresedArrayNew = undefined;
+    reversedPtArray = undefined;
   }
 
   exportImage() {
@@ -215,32 +242,41 @@ class ElevationProfile extends declared(Widget) {
 
 
   protected _renderChart(data: any[], options: any): any {
-    let that = this;
-    Plotly.newPlot('myDiv', data, options, { displayModeBar: false, responsive: true, autosize: true }).then(function (plot: any) {
-      that.viewModel.plot = plot;
-    })
-    return null;
+    Plotly.react('myDiv', data, options, { displayModeBar: false, responsive: true, autosize: true });
   }
 
   private createChart(dd: any) {
     this.viewModel.state = 'ready';
-    const d = JSON.parse(JSON.stringify(dd));
-    
-    const [data, options, ptArrayNew] = this.viewModel.getChartData(d, this.unit);
-    
+    let d = JSON.parse(JSON.stringify(dd));
+    let [data, options, ptArrayNew] = this.viewModel.getChartData(d, this.unit);
     this._renderChart(data, options);
-    // console.log(this.points);
-    // this.viewModel.initializeHover(Plotly, ptArrayNew, this.mapView);
-    // this.viewModel.ptArray = ptArrayNew;
+    this.viewModel.initializeHover(Plotly, ptArrayNew, this.mapView);
+    d = null;
+    [data, options, ptArrayNew] = [null,null,null];
   }
 
+
   startTest() {
-    const rj = JSON.parse(dt);
-    const _ptArray = rj.results[0].value.features[0].geometry.paths[0];
-    this.viewModel.ptArrayOriginal  = JSON.parse(JSON.stringify(_ptArray));
-    this.createChart(_ptArray);
-    console.log(_ptArray, this.viewModel.ptArrayOriginal);
+    // this.render();
+    setTimeout(()=>{ 
+      let rj = JSON.parse(dt);
+      let _ptArray = rj.results[0].value.features[0].geometry.paths[0];
+      _ptArray = _ptArray.map((p: any) => [Decimal(p[0]),Decimal(p[1]),Decimal(p[2])]);
+      this.viewModel.ptArrayOriginal  = JSON.parse(JSON.stringify(_ptArray));
+      this.createChart(_ptArray);
+      rj = null;
+      _ptArray = null;
+     }, 10);
   }
+
+  exit() {
+    const div = document.getElementById('myDiv');
+    div.outerHTML = div.outerHTML;
+    Plotly.purge('myDiv');
+    this.viewModel.ptArrayOriginal = null;
+    this.destroy();
+  }
+
 
 }
 

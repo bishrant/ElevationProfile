@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -5,8 +6,8 @@
   <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no" />
   <title>Elevation Profile</title>
   <link rel="stylesheet" href="https://js.arcgis.com/4.15/esri/themes/light/main.css">
-    <link rel="stylesheet" href="./app/css/main.css">
-    <script src="https://kit.fontawesome.com/6ac00f6e19.js" crossorigin="anonymous" defer></script>
+  <link rel="stylesheet" href="./app/css/main.css">
+  <script src="https://kit.fontawesome.com/6ac00f6e19.js" crossorigin="anonymous" defer></script>
   <script>
     var locationPath = location.pathname.replace(/\/[^\/]+$/, "");
     window.dojoConfig = {
@@ -36,18 +37,24 @@
           center: [-100.33, 43.69],
           zoom: 16
         });
-        var widget = new ElevationProfile({
-          mapView: view,
-          slopeThreshold: 4,
-          unit: 'feet'
-        });
+
+        var widget;
         view.when(function () {
-          document.getElementById('createGraph').addEventListener("click", (function(e) {
+          document.getElementById('createGraph').addEventListener("click", (function (e) {
             console.log('clicked');
+            widget = null;
+            widget = new ElevationProfile({
+              mapView: view,
+              slopeThreshold: 4,
+              unit: 'feet'
+            });
+
+            view.ui.add(widget, 'bottom-right');
+
             widget.startTest();
           }));
-          view.ui.add(widget, 'bottom-right');
-          window.widget = widget;
+          
+          // window.widget = widget;
         })
       });
   </script>
@@ -56,7 +63,8 @@
 <body>
   <div id="viewDiv" class="esri-widget"></div>
   <div id="test"></div>
-  <button id='createGraph' style="position: absolute;top:10px; right: 20px;">Elevation profile </button>
+  <button id="createGraph" style="position: absolute;top:10px; right: 20px;">Elevation profile </button>
+  <button id="closeGraph" style="position: absolute;top:40px; right: 20px;">Close Elevation profile </button>
 </body>
 
 </html>

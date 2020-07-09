@@ -1,5 +1,5 @@
 import { ElevationUnits } from './interfaces.d';
-import { min, max } from "./Uitls";
+import { min, max, elevationUnitMap, lengthAbbrMap } from "./Uitls";
 const convertor = {
   meters: 1,
   feet: 3.281,
@@ -9,22 +9,7 @@ const convertor = {
   yards: 1.094,
 };
 
-const elevationUnitMap = {
-  meters: "meters",
-  feet: "feet",
-  kilometers: "meters",
-  miles: "feet",
-  "nautical-miles": "feet",
-  yards: "feet",
-};
-const lengthAbbrMap = {
-  meters: "m.",
-  feet: "ft.",
-  kilometers: "km.",
-  miles: "mi.",
-  "nautical-miles": "n.m.",
-  yards: "yd.",
-};
+
 
 const CreateHigherSlopeLine = (higherSlopeArray: any) => {
   return {
@@ -44,19 +29,21 @@ const CreateHigherSlopeLine = (higherSlopeArray: any) => {
   };
 };
 
-const ConvertElevationUnits = (ptArray0: any, unit: ElevationUnits) => {
-  const ptArray = ptArray0.slice();
+const ConvertElevationUnits = (ptArray: any, unit: ElevationUnits) => {
+  // const ptArray = ptArray0.slice();
   const multiplier = convertor[elevationUnitMap[unit]];
   ptArray.forEach((p: any) => {
     p[2] = p[2] * multiplier;
   });
+  // ptArray = undefined;
   return ptArray;
 };
 
-const CreateNormalElevationLine = (ptArray0: any, unit: ElevationUnits) => {
-  const ptArray = ptArray0.slice();
+const CreateNormalElevationLine = (ptArray: any, unit: ElevationUnits) => {
+  // const ptArray = ptArray0.slice();
   const abbr = elevationUnitMap[unit] === 'meters' ? 'm.' : 'ft.';
   const labbr = lengthAbbrMap[unit];
+  
   return {
     x: ptArray.map((p: any) => p[3]),
     y: ptArray.map((p: any) => p[2]),
@@ -64,9 +51,8 @@ const CreateNormalElevationLine = (ptArray0: any, unit: ElevationUnits) => {
     fill: "tozeroy",
     type: "scatter",
     mode: "markers+lines",
-    m: ptArray.map((p: any) => p[2])[0],
     marker: {
-      color: ptArray.map((p: any) => "transparent"),
+      color: "transparent",
     },
     name: "",
     text: "new line",
@@ -84,7 +70,7 @@ const CreateNormalElevationLine = (ptArray0: any, unit: ElevationUnits) => {
 };
 
 const GetGraphOptions = (ptArray: any, unit: ElevationUnits) => {
-  const elev = ptArray.map((p: any) => p[2]);
+  let elev = ptArray.map((p: any) => p[2]);
   const abbr = elevationUnitMap[unit];
   const options = {
     hoverMode: "closest",
@@ -145,6 +131,7 @@ const GetGraphOptions = (ptArray: any, unit: ElevationUnits) => {
       },
     },
   };
+  elev = null;
   return options;
 };
 

@@ -7,6 +7,8 @@
       "jsx": "react",
       "jsxFactory": "tsx",
       "target": "es5",
+      "strict": true,
+      "strictPropertyInitialization": false,
       "experimentalDecorators": true,
       "preserveConstEnums": true,
       "suppressImplicitAnyIndexErrors": true,

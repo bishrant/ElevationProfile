@@ -90,37 +90,29 @@ class ElevationProfile extends declared(Widget) {
     const elevation = pts.map((p: any) => p[2]);
     const elvBase = elevation[0];
     const elevationDiff = elevation.map((p: any) => (p - elvBase));
-    const elevationRange = max(elevation)
+    
+    const elevationGain = sum(elevationDiff.filter((d: any) => d>0));
+    const elevationLoss = sum(elevationDiff.filter((d: any) => d<0));
     // gets the stats needed for PLMO report
-    // required outputs include 
-    // Total Distance: 20.7 mi
-    // Maximum Slope: 11.3 %
-    //   Minimum Slope: 0 %
-    //     Mean Slope: 2.4 %
-    //       Steep Slopes(> 8 %): 2 mi
-    // Elevation Range: 376 ft
-    // Minimum Elevation: 2, 262 ft
-    // Maximum Elevation: 2, 637 ft
-    // Total Elevation Gain: 1, 301 ft
-    // Total Elevation Lost: 1, 312 ft
-    console.log(elevationDiff, elvBase, elevation, pts);
     return {
       TotalDistance: totalDistance + unitAbbr,
       MaximumSlope: max(slopes) + '%',
       MinimumSlope: min(slopes) + '%',
-      MeanSlope: avg(slopes).toPrecision(2) + '%',
+      MeanSlope: Decimal(avg(slopes)) + '%',
       SteepSlopes: sum(steepSlopes) + unitAbbr,
       ElevationRange: Math.abs(Decimal(max(elevation) - min(elevation))) + elevAbbr,
       MinimumElevation: Decimal(min(elevation)) + elevAbbr,
       MaximumElevation:  Decimal(max(elevation)) + elevAbbr,
-      TotalElevationGain: 0,
-      TotalElevationLost: 0
-
+      TotalElevationGain: Decimal(elevationGain) + elevAbbr,
+      TotalElevationLost: Decimal(elevationLoss) + elevAbbr,
     }
   }
 
   createReport() {
-    console.log(this.GetStatistics());
+    console.log({
+      summaryStats: this.GetStatistics(),
+      image:  this.exportImage()
+    });
   }
 
   private _renderLoader() {
@@ -172,7 +164,7 @@ class ElevationProfile extends declared(Widget) {
 
   reverseProfile() {
     this.reveresed = !this.reveresed;
-    const div = document.getElementById('myDiv');
+    const div = document.getElementById('myDiv') as any;
     Plotly.purge('myDiv');
     div.outerHTML = div.outerHTML;
     
@@ -270,7 +262,7 @@ class ElevationProfile extends declared(Widget) {
   }
 
   exit() {
-    const div = document.getElementById('myDiv');
+    const div = document.getElementById('myDiv') as any;
     div.outerHTML = div.outerHTML;
     Plotly.purge('myDiv');
     this.viewModel.ptArrayOriginal = null;

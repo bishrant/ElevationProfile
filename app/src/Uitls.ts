@@ -19,7 +19,7 @@ const lengthAbbrMap = {
   yards: "yd.",
 };
 
-const Decimal = (num: number) => {
+const Decimal = (num: number): number=> {
   return Math.round((num + Number.EPSILON) * 100) / 100;
 }
 
@@ -32,17 +32,17 @@ const _slope = (p1: any[], p2: any[]) => {
   return Math.abs(_slope);
 };
 
-const min = (input: any) => {
-  if (toString.call(input) !== "[object Array]") return false;
+const min = (input: any):number => {
+  if (toString.call(input) !== "[object Array]") return 0;
   return Math.min.apply(null, input);
 };
-const avg = (input: any) => {
+const avg = (input: any):number => {
   const total = input.reduce((acc: any, c: any) => acc + c, 0);
   return total / input.length;
 }
 
-const max = (input: any) => {
-  if (toString.call(input) !== "[object Array]") return false;
+const max = (input: any):number => {
+  if (toString.call(input) !== "[object Array]") return 0;
   return Math.max.apply(null, input);
 };
 

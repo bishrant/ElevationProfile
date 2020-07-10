@@ -4,7 +4,13 @@ export const CSS = {
   chart: prefix + "chart",
   widgetInfoBar: prefix + "infobar",
   loading: prefix + "loading",
-  profileDirection: 'profileDirection',
+  titleInput: prefix + 'titleInput',
+  slopeIndicator: prefix + 'slopeIndicator',
+  profileDirection: prefix + 'profileDirection',
+  createreportBar: prefix + 'createreportBar',
+  chartBottomBar: prefix + 'chartBottomBar',
+  createReportBtn : prefix + 'createReportBtn ',
+
 
   //common
   esriWidget: "esri-widget",

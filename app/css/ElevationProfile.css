@@ -6,7 +6,7 @@
 }
 
 .elevation-profile__chart {
-    height: 340px; 
+    height: 340px;
     width: 100%;
 }
 
@@ -18,34 +18,44 @@
 .elevation-profile__hidden {
     display: none;
 }
-.elevation-profile__loading{
+.elevation-profile__loading {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-
 }
-.slopeIndicator {
+.elevation-profile__slopeIndicator {
     display: flex;
     align-items: center;
     margin-top: -30px;
     margin-left: 20px;
 }
-.profileDirection {
-   height: 35px;
+.elevation-profile__profileDirection {
+    height: 35px;
     width: 35px;
     font-size: 25px;
     border-radius: 35px;
-    background: gray;
+    background: #dcdcdc;
     border: none;
     /* float: left; */
     margin-left: 20px;
 }
-.createreportBar {
-        margin-left: auto;
+.elevation-profile__createreportBar {
+    margin-left: auto;
     margin-right: 20px;
 }
-.chartBottomBar {
+.elevation-profile__chartBottomBar {
     display: flex;
     align-items: center;
+}
+.elevation-profile__titleInput {
+    height: 30px;
+    line-height: 30px;
+    margin: 5px;
+}
+.elevation-profile__createReportBtn {
+    height: 30px;
+    background: gainsboro;
+    /* border-radius: 5px; */
+    border: 1px solid gray;
 }

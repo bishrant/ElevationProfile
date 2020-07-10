@@ -53,6 +53,11 @@
 
             widget.startTest();
           }));
+
+          document.getElementById('closeGraph').addEventListener("click", (function (e) {
+            widget.exit();
+            widget = null;
+          }));
           
           // window.widget = widget;
         })

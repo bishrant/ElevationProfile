@@ -54,7 +54,7 @@ class ElevationProfile extends declared(Widget) {
 
 
   render() {
-    const { slopeThreshold, state } = this.viewModel;
+    const { state } = this.viewModel;
     return (
       <div class={this.classes(CSS.esriWidget, CSS.root)}>
         <div id="myDiv" class={this.classes({ 'elevation-profile__chart': state !== 'idle', 'elevation-profile__hidden': state !== 'ready' })}></div>
@@ -71,8 +71,6 @@ class ElevationProfile extends declared(Widget) {
   postInitialize() {
     this.initSketchVM();
   }
-
-
 
   GetStatistics() {
     let pts = JSON.parse(JSON.stringify(this.viewModel.ptArrayOriginal));
@@ -109,7 +107,9 @@ class ElevationProfile extends declared(Widget) {
   }
 
   createReport() {
+    const _title = document.getElementById('elevationProfileTitle') as any;
     console.log({
+      title: _title.value,
       summaryStats: this.GetStatistics(),
       image:  this.exportImage()
     });
@@ -134,27 +134,27 @@ class ElevationProfile extends declared(Widget) {
     return (
       <div class={CSS.widgetInfoBar}>
         <div>
-          <span class="slopeIndicator">
+          <span class={CSS.slopeIndicator}>
             <svg height="25" width="25">
               <line x1="0" y1="12" x2="25" y2="12" style="stroke:rgb(255,0,0);stroke-width:4" />
             </svg>
             &nbsp;&nbsp;Steep slope &gt; {slopeThreshold}%
           </span>
         </div>
-        <div class='chartBottomBar'>
-          <button bind={this} onclick={this.reverseProfile} class="profileDirection" title="reveser">
+        <div class={CSS.chartBottomBar}>
+          <button bind={this} onclick={this.reverseProfile} class={CSS.profileDirection} title="reveser">
             <i class={this.classes(classes)} title="reveser"></i>
           </button>
-          <button bind={this} onclick={this.exit} class="profileDirection" title="reveser">
-            <i class='fa fa-times-circle' title="reveser"></i>
+          <button bind={this} onclick={this.exit} class={CSS.profileDirection} title="Close">
+            <i class='fa fa-times-circle' title="Close"></i>
           </button>
-        <span class="createreportBar">
-          <b> Project Name: </b><input type="text" /><button bind={this} onclick={this.createReport}>Create Report</button>
+        <span class={CSS.createreportBar}>
+          <b> Project Name: </b>
+          <input type="text" id="elevationProfileTitle" class={CSS.titleInput}/>
+          <button bind={this} onclick={this.createReport} class={CSS.createReportBtn}>Create Report</button>
           </span>
           </div>
       </div>
-
-
     );
   }
 
@@ -268,8 +268,6 @@ class ElevationProfile extends declared(Widget) {
     this.viewModel.ptArrayOriginal = null;
     this.destroy();
   }
-
-
 }
 
 export = ElevationProfile;

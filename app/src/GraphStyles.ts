@@ -101,6 +101,8 @@ const GetGraphOptions = (ptArray: any, unit: ElevationUnits) => {
       fixedrange: true,
       automargin: true,
       standoff: 10,
+      linewidth: 2,
+      separatethousands: true,
       title: {
         text: "<b>Distance ("+unit+")</b>",
         standoff: 10,
@@ -120,6 +122,8 @@ const GetGraphOptions = (ptArray: any, unit: ElevationUnits) => {
         max(elev) > 100 ? max(elev) + 10 : max(elev) + 5,
       ],
       fixedrange: true,
+      linewidth: 2,
+      separatethousands: true,
       title: {
         text: "<b>Elevation (" + abbr + ")</b>",
         standoff: 1,

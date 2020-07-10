@@ -1,9 +1,5 @@
-/// <amd-dependency path="esri/core/tsSupport/declareExtendsHelper" name="__extends" />
-/// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
-
-import { subclass, declared, property, aliasOf } from "esri/core/accessorSupport/decorators";
-
-import Widget = require("esri/widgets/Widget");
+import { subclass, property, aliasOf } from "esri/core/accessorSupport/decorators";
+import Accessor = require("esri/core/Accessor");
 import MapView = require("esri/views/MapView");
 import { renderable, tsx } from "esri/widgets/support/widget";
 import SketchViewModel = require("esri/widgets/Sketch/SketchViewModel");
@@ -15,9 +11,10 @@ import ElevationProfileViewModel = require("./ElevationProfileViewModel");
 import { ElevationProfileProperties, ElevationUnits } from "./interfaces";
 import { CSS } from './resources';
 import { ConvertElevationUnits } from "./GraphStyles";
+import Widget = require("esri/widgets/Widget");
 
 @subclass("esri.widgets.ElevationProfile")
-class ElevationProfile extends declared(Widget) {
+class ElevationProfile extends Widget {
 
   constructor(props: ElevationProfileProperties) {
     super();

@@ -10,13 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/arcgis-js-api": "^4.15.0",
+    "@types/arcgis-js-api": "^4.16.0",
     "chart.js": "^2.9.3",
-    "highcharts": "^8.1.2",
-    "plotly.js-dist": "^1.54.5"
+    "highcharts": "^8.1.2"
   },
   "devDependencies": {
-    "@types/plotly.js": "^1.50.13",
     "@types/source-map": "^0.5.7",
     "tslint": "^6.1.2",
     "typescript": "^3.9.6"

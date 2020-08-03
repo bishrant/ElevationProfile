@@ -1,5 +1,4 @@
 import { subclass, property, aliasOf } from "esri/core/accessorSupport/decorators";
-import Accessor = require("esri/core/Accessor");
 import MapView = require("esri/views/MapView");
 import { renderable, tsx } from "esri/widgets/support/widget";
 import SketchViewModel = require("esri/widgets/Sketch/SketchViewModel");
@@ -12,17 +11,28 @@ import { ElevationProfileProperties, ElevationUnits } from "./interfaces";
 import { CSS } from './resources';
 import { ConvertElevationUnits } from "./GraphStyles";
 import Widget = require("esri/widgets/Widget");
+import PrintTask = require("esri/tasks/PrintTask");
+import PrintParameters = require("esri/tasks/support/PrintParameters");
+import PrintTemplate = require("esri/tasks/support/PrintTemplate");
 
 @subclass("esri.widgets.ElevationProfile")
 class ElevationProfile extends Widget {
 
   constructor(props: ElevationProfileProperties) {
     super();
+    console.log(props);
+    this.mapView = props.mapView;
+    this.unit = props.unit;
+    this.slopeThreshold = props.slopeThreshold;
   }
 
   @property()
   @renderable()
   state: any;
+
+  @property()
+  @renderable()
+  showWidget: boolean = false;
 
   @property()
   mapView: MapView;
@@ -37,6 +47,9 @@ class ElevationProfile extends Widget {
   unit: ElevationUnits = 'miles';
 
   @property()
+  reportURL: string = 'https://localhost:44358/api/CreateElevationProfileReport';
+
+  @property()
   private reveresed: boolean = false;
 
   @property()
@@ -48,7 +61,7 @@ class ElevationProfile extends Widget {
 
   @aliasOf("viewModel.slopeThreshold")
   slopeThreshold: ElevationProfileViewModel["slopeThreshold"];
-
+  // <div class={this.classes(CSS.esriWidget, CSS.root, !this.showWidget ? CSS.chartHidden: null )}>
 
   render() {
     const { state } = this.viewModel;
@@ -76,18 +89,18 @@ class ElevationProfile extends Widget {
     pts = CalculateSlope(pts);
     pts = CalculateSegmentLength(pts, this.unit);
 
-    const unitAbbr = " "+ lengthAbbrMap[this.unit];
-    const elevAbbr = " "+ lengthAbbrMap[elevationUnitMap[this.unit]];
+    const unitAbbr = " " + lengthAbbrMap[this.unit];
+    const elevAbbr = " " + lengthAbbrMap[elevationUnitMap[this.unit]];
     console.log(pts);
-    const totalDistance = pts[pts.length-1][3];
+    const totalDistance = pts[pts.length - 1][3];
     const slopes = pts.map((p: any) => p[4]);
-    const steepSlopes = pts.filter((s: any) => s[4] > this.slopeThreshold).map((p: any) => p[5]);
+    const steepSlopes = this.slopeThreshold ? pts.filter((s: any) => s[4] > this.slopeThreshold).map((p: any) => p[5]) : [];
     const elevation = pts.map((p: any) => p[2]);
     const elvBase = elevation[0];
     const elevationDiff = elevation.map((p: any) => (p - elvBase));
-    
-    const elevationGain = sum(elevationDiff.filter((d: any) => d>0));
-    const elevationLoss = sum(elevationDiff.filter((d: any) => d<0));
+
+    const elevationGain = sum(elevationDiff.filter((d: any) => d > 0));
+    const elevationLoss = sum(elevationDiff.filter((d: any) => d < 0));
     // gets the stats needed for PLMO report
     return {
       TotalDistance: totalDistance + unitAbbr,
@@ -97,19 +110,60 @@ class ElevationProfile extends Widget {
       SteepSlopes: sum(steepSlopes) + unitAbbr,
       ElevationRange: Math.abs(Decimal(max(elevation) - min(elevation))) + elevAbbr,
       MinimumElevation: Decimal(min(elevation)) + elevAbbr,
-      MaximumElevation:  Decimal(max(elevation)) + elevAbbr,
+      MaximumElevation: Decimal(max(elevation)) + elevAbbr,
       TotalElevationGain: Decimal(elevationGain) + elevAbbr,
       TotalElevationLost: Decimal(elevationLoss) + elevAbbr,
     }
   }
+  exportImage() {
+    return new Promise((resolve: any, reject: any) => {
+      var myPlot: any = document.getElementById('myDiv');
+      Plotly.toImage(myPlot, { height: 400, width: 856 })
+        .then(function (url: any) { resolve(url); })
+        .catch((err: any) => reject(err))
+    });
+  }
 
-  createReport() {
+  async createReport() {
+    await this.mapView.goTo(this.sketchVM.layer.graphics);
+    const printTemplate = new PrintTemplate({
+      format: 'jpg',
+    });
+    const printParameters = new PrintParameters({
+      view: this.mapView,
+      template: printTemplate,
+      extraParameters: {
+        Layout_Template: 'ProfileToolFeetTemplate',
+        f: 'json'
+      }
+    })
+    const printTask = new PrintTask({ url: 'https://tfsgis02.tfs.tamu.edu/arcgis/rest/services/Shared/ExportWebMap/GPServer/Export%20Web%20Map/execute' })
+
+    const printURLData: any = await printTask.execute(printParameters);
     const _title = document.getElementById('elevationProfileTitle') as any;
-    console.log({
+    const img = await this.exportImage();
+
+
+    var reportData = {
       title: _title.value,
       summaryStats: this.GetStatistics(),
-      image:  this.exportImage()
-    });
+      graphImage: (img as any).split("data:image/png;base64,")[1],
+      mapLink: printURLData.url
+    };
+
+    console.log(reportData);
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    var requestOptions: any = {
+      method: "POST",
+      headers: myHeaders,
+      body: JSON.stringify(reportData),
+      redirect: "follow",
+    };
+    const reportResponse: any = await fetch(this.reportURL, requestOptions).then((response: any) => response.json())
+    const rr = reportResponse;
+    console.log("Final link ", rr);
+
   }
 
   private _renderLoader() {
@@ -145,18 +199,23 @@ class ElevationProfile extends Widget {
           <button bind={this} onclick={this.exit} class={CSS.profileDirection} title="Close">
             <i class='fa fa-times-circle' title="Close"></i>
           </button>
-        <span class={CSS.createreportBar}>
-          <b> Project Name: </b>
-          <input type="text" id="elevationProfileTitle" class={CSS.titleInput}/>
-          <button bind={this} onclick={this.createReport} class={CSS.createReportBtn}>Create Report</button>
+          <span class={CSS.createreportBar}>
+            <b> Project Name: </b>
+            <input type="text" id="elevationProfileTitle" class={CSS.titleInput} />
+            <button bind={this} onclick={this.createReport} class={CSS.createReportBtn}>Create Report</button>
           </span>
-          </div>
+        </div>
       </div>
     );
   }
 
   start() {
-    this.sketchVM.create('polyline');
+    this.showWidget = false;
+    const that = this;
+    setTimeout(() => {
+      console.log(this, that)
+      this.sketchVM.create('polyline');
+    }, 10);
   }
 
   reverseProfile() {
@@ -164,7 +223,7 @@ class ElevationProfile extends Widget {
     const div = document.getElementById('myDiv') as any;
     Plotly.purge('myDiv');
     div.outerHTML = div.outerHTML;
-    
+
     let reversedPtArray = JSON.parse(JSON.stringify(this.viewModel.ptArrayOriginal));
     let reveresedArrayNew;
     if (this.reveresed) {
@@ -180,15 +239,7 @@ class ElevationProfile extends Widget {
     reversedPtArray = undefined;
   }
 
-  exportImage() {
-    var myPlot: any = document.getElementById('myDiv');
-    Plotly.toImage(myPlot, { height: 300, width: 300 })
-      .then(
-        function (url: any) {
-          console.log(url);
-        }
-      )
-  }
+
 
   private initSketchVM() {
     const graphicsLayer = new GraphicsLayer();
@@ -215,6 +266,7 @@ class ElevationProfile extends Widget {
 
   private async displayLineChart(graphic: Graphic) {
     this.viewModel.state = "loading";
+    this.showWidget = true;
     try {
       let elevationData = await this.viewModel.GetElevationData(graphic);
 
@@ -241,28 +293,30 @@ class ElevationProfile extends Widget {
     this._renderChart(data, options);
     this.viewModel.initializeHover(Plotly, ptArrayNew, this.mapView);
     d = null;
-    [data, options, ptArrayNew] = [null,null,null];
+    [data, options, ptArrayNew] = [null, null, null];
   }
 
 
   startTest() {
     // this.render();
-    setTimeout(()=>{ 
+    setTimeout(() => {
       let rj = JSON.parse(dt);
       let _ptArray = rj.results[0].value.features[0].geometry.paths[0];
-      _ptArray = _ptArray.map((p: any) => [Decimal(p[0]),Decimal(p[1]),Decimal(p[2])]);
-      this.viewModel.ptArrayOriginal  = JSON.parse(JSON.stringify(_ptArray));
+      _ptArray = _ptArray.map((p: any) => [Decimal(p[0]), Decimal(p[1]), Decimal(p[2])]);
+      this.viewModel.ptArrayOriginal = JSON.parse(JSON.stringify(_ptArray));
       this.createChart(_ptArray);
       rj = null;
       _ptArray = null;
-     }, 10);
+    }, 10);
   }
 
   exit() {
+    this.showWidget = false;
     const div = document.getElementById('myDiv') as any;
     div.outerHTML = div.outerHTML;
     Plotly.purge('myDiv');
     this.viewModel.ptArrayOriginal = null;
+    this.sketchVM.layer.graphics.removeAll();
     this.destroy();
   }
 }

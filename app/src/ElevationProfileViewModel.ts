@@ -25,13 +25,13 @@ import Graphic = require("esri/Graphic");
 // import { ItemScoreViewModelProperties, Suggestion } from "./interfaces";
 
 @subclass("esri.widgets.ElevationProfileViewModel")
-class ElevationProfileViewModel extends declared(Accessor) {
+class ElevationProfileViewModel extends Accessor {
   constructor(props?: ElevationProfileProperties) {
     super();
   }
 
   @property()
-  slopeThreshold: number;
+  slopeThreshold: number | undefined;
 
   @property()
   plot: any;
@@ -82,7 +82,7 @@ class ElevationProfileViewModel extends declared(Accessor) {
 
     let normalLine: any = CreateNormalElevationLine(pts, unit);
     var data: any;
-    if (this.slopeThreshold > 0) {
+    if (this.slopeThreshold && this.slopeThreshold > 0) {
       const higherSlope = GetSegmentsWithHigherSlope(pts, this.slopeThreshold);
       var higherSlopeLine = CreateHigherSlopeLine(higherSlope);
 

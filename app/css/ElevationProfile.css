@@ -10,6 +10,9 @@
     width: 100%;
 }
 
+.root_chart__hidden {
+    display: none
+}
 .elevation-profile__infobar {
     display: flex;
     /* align-items: center; */

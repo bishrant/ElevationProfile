@@ -1,6 +1,7 @@
 const prefix = "elevation-profile__";
 export const CSS = {
   root: "elevation-profile",
+  chartHidden: 'root_chart__hidden',
   chart: prefix + "chart",
   widgetInfoBar: prefix + "infobar",
   loading: prefix + "loading",
